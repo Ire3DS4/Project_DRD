@@ -52,7 +52,7 @@ dim(Green)
 ```
 ```r
 ## [1] 622399      8
-```r
+```
 
 ### 3. Check Probe Info by Address
 
@@ -60,16 +60,46 @@ Probe information is essential for identifying and filtering relevant data.
 
 ```r
 # Check probe info by address
-probe_info <- getProbeInfo(RGset)
+address <- "39802405"
+
+if (address %in% rownames(Red) & address %in% rownames(Green)) 
+    Red_fluor <- Red[address, ]
+    Green_fluor <- Green[address, ]
+
+load("Illumina450Manifest_clean.RData")
+probe_type = Illumina450Manifest_clean[Illumina450Manifest_clean$AddressA_ID==address, 'Infinium_Design_Type']
+```
+```r
+## [1] II
+## Levels: I II
 ```
 
 ### 4. Create the Object MSet.raw
 
-We create the `MSet.raw` object which holds the methylation data.
+We create the `fluorescence_data` dataframe which holds the methylation data.
 
 ```r
-# Create MSet.raw object
-MSet.raw <- preprocessRaw(RGset)
+# Create and fill the fluorescence_data dataframe
+# Fill the table
+
+fluorescence_data <- data.frame(
+  Sample = sapply(strsplit(rownames(fluorescence_data), "_"), `[`, 2),
+  Red_fluor = Red_fluor,
+  Green_fluor = Green_fluor,
+  Type = probe_type
+)
+rownames(fluorescence_data) <- NULL
+```
+```r
+Sample	Red_fluor	Green_fluor	Type
+R01C01	4254	    8361	      II
+R02C01	4584	    10343	      II
+R03C01	4201	    9859	      II
+R04C01	3627	    8552	      II
+R02C02	5669	    1003	      II
+R03C02	7689	    1041	      II
+R04C02	5954	    6336	      II
+R05C02	5989	    761	        II
 ```
 
 ## Preprocessing and Normalization
