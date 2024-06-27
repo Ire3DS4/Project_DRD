@@ -91,7 +91,7 @@ fluorescence_data <- data.frame(
 rownames(fluorescence_data) <- NULL
 ```
 ```r
-Sample	Red_fluor	Green_fluor	Type
+Sample	Red_fluor Green_fluor	Type
 R01C01	4254	    8361	      II
 R02C01	4584	    10343	      II
 R03C01	4201	    9859	      II
@@ -99,7 +99,7 @@ R04C01	3627	    8552	      II
 R02C02	5669	    1003	      II
 R03C02	7689	    1041	      II
 R04C02	5954	    6336	      II
-R05C02	5989	    761	        II
+R05C02	5989	    761	          II
 ```
 
 ## Preprocessing and Normalization
