@@ -74,13 +74,8 @@ probe_type = Illumina450Manifest_clean[Illumina450Manifest_clean$AddressA_ID==ad
 ## Levels: I II
 ```
 
-### 4. Create the Object MSet.raw
-
-We create the `fluorescence_data` dataframe which holds the methylation data.
-
 ```r
 # Create and fill the fluorescence_data dataframe
-# Fill the table
 
 fluorescence_data <- data.frame(
   Sample = sapply(strsplit(rownames(fluorescence_data), "_"), `[`, 2),
@@ -103,6 +98,15 @@ R05C02	5989	     761	      II
 
 ```
 
+### 4. Create the Object MSet.raw
+
+We create the `MSet.raw` object which holds the methylation data.
+```r
+# Create MSet.raw object
+MSet.raw <- preprocessRaw(RGset)
+```
+
+
 ## Preprocessing and Normalization
 
 ### 5. Quality Check
@@ -113,6 +117,7 @@ Quality control is crucial to ensure data integrity. We visualize the control pr
 # Quality check
 qc <- qcReport(RGset, pdf = "QCReport.pdf")
 ```
+[QCplot.pdf](https://github.com/user-attachments/files/16011201/QCplot.pdf)
 
 ### 6. Beta and M Values
 
