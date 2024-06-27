@@ -91,7 +91,7 @@ fluorescence_data <- data.frame(
 rownames(fluorescence_data) <- NULL
 ```
 ```r
-Sample	Red_fluor    Green_fluor	Type
+Sample	Red_fluor    Green_fluor  Type
 R01C01	4254	     8361	      II
 R02C01	4584	     10343	      II
 R03C01	4201	     9859	      II
