@@ -42,17 +42,17 @@ The Red and Green signal intensities are stored in separate data frames.
 Red <- data.frame(getRed(RGset))
 dim(Red)
 ```
-'''r
+```r
 ## [1] 622399      8
-'''r
+```
 
 ```r
 Green <- data.frame(getGreen(RGset))
 dim(Green)
 ```
-'''r
+```r
 ## [1] 622399      8
-'''r
+```r
 
 ### 3. Check Probe Info by Address
 
