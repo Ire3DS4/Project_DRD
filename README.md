@@ -23,9 +23,14 @@ First, we load the necessary libraries and raw data files. The raw data files in
 # Load necessary libraries
 library(minfi)
 library(knitr)
+library(IlluminaHumanMethylation450kmanifest)
+library(IlluminaHumanMethylationEPICmanifest)
+library(IlluminaHumanMethylationEPICanno.ilm10b2.hg19)
 
 # Load raw data
-pheno_data <- read.csv("C:/Users/rober/OneDrive/Desktop/Uni/Bioinformatics/DNA-RNA/report/input_data/Samplesheet_report_2024.csv", header=TRUE, stringsAsFactors=TRUE)
+baseDir <- ('Input')
+targets <- read.metharray.sheet(baseDir)
+RGset <- read.metharray.exp(targets = targets)
 ```
 
 ### 2. Create R/G Dataframes
@@ -34,8 +39,20 @@ The Red and Green signal intensities are stored in separate data frames.
 
 ```r
 # Create R/G dataframes
-RGset <- read.metharray.exp(targets = pheno_data)
+Red <- data.frame(getRed(RGset))
+dim(Red)
 ```
+'''r
+## [1] 622399      8
+'''r
+
+```r
+Green <- data.frame(getGreen(RGset))
+dim(Green)
+```
+'''r
+## [1] 622399      8
+'''r
 
 ### 3. Check Probe Info by Address
 
