@@ -117,7 +117,7 @@ Quality control is crucial to ensure data integrity. We visualize the control pr
 # Quality check
 qc <- qcReport(RGset, pdf = "QCReport.pdf")
 ```
-![Alt text](plots/QCplot.pdf)
+![QC plot](plots/QCplot.png)
 
 ### 6. Beta and M Values
 
