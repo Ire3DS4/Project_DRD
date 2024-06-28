@@ -242,10 +242,30 @@ Principal Component Analysis (PCA) reduces data dimensionality and helps visuali
 
 ```r
 # Perform PCA
-pca_result <- prcomp(t(beta_norm), scale. = TRUE)
-plot(pca_result$x[, 1], pca_result$x[, 2], col = ifelse(pheno_data$Group == "WT", "blue", "red"), main = "PCA of Beta Values", xlab = "PC1", ylab = "PC2")
-legend("topright", legend = c("WT", "MUT"), col = c("blue", "red"), pch = 1)
+par(mfrow = c(1, 2))
+
+# Define the palette for the first plot
+palette(c("#FF0000", "#9966FF"))
+
+# Plot the first PCA plot
+plot(pca_results$x[, 1], pca_results$x[, 2], cex = 2, pch = 2, col = targets$Group,
+     xlab = "PC1", ylab = "PC2", xlim = c(-1000, 1000), ylim = c(-1000, 1000))
+text(pca_results$x[, 1], pca_results$x[, 2], labels = rownames(pca_results$x), cex = 0.5, pos = 1)
+legend("bottomright", legend = levels(targets$Group), col = 1:nlevels(targets$Group), pch = 2)
+
+# Define the palette for the second plot
+palette(c("#0066CC", "#FF9999"))
+
+# Set shapes for sexes
+sex_shapes <- c("M" = -0x2642L, "F" = -0x2640L)
+
+# Plot the second PCA plot
+plot(pca_results$x[, 1], pca_results$x[, 2], cex = 1.5, pch = sex_shapes[targets$Sex], col = targets$Group,
+     xlab = "PC1", ylab = "PC2", xlim = c(-1000, 1000), ylim = c(-1000, 1000))
+text(pca_results$x[, 1], pca_results$x[, 2], labels = rownames(pca_results$x), cex = 0.5, pos = 1)
+legend("bottomright", legend=c("M", "F"),  col = c(1, 2), pch = c(-0x2642L, -0x2640L))
 ```
+![PCA](plots/PCA.png)
 
 ## Visualization and Analysis
 
