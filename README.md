@@ -119,6 +119,11 @@ qc <- qcReport(RGset, pdf = "QCReport.pdf")
 ```
 ![QC plot](plots/QCplot.png)
 
+```r
+controlStripPlot(RGset, controls="NEGATIVE")
+```
+![Control strip plot](plots/ControlStripPlot.png)
+
 ### 6. Beta and M Values
 
 Beta values represent the proportion of methylation at each CpG site, while M values are logit-transformed beta values.
