@@ -162,6 +162,7 @@ Beta values represent the proportion of methylation at each CpG site, while M va
 beta_values <- getBeta(MSet.raw)
 M_values <- getM(MSet.raw)
 ```
+![WT beta and M plots](plots/WT_beta_m.png)
 
 ### 7. Functional Normalization
 
@@ -172,6 +173,68 @@ Normalization adjusts for technical variation between samples.
 norm_result <- preprocessNoob(RGset)
 beta_norm <- getBeta(norm_result)
 ```
+
+```r
+# Filter Infinium I and II data
+dfI <- Illumina450Manifest_clean %>% filter(Infinium_Design_Type == "I") %>% droplevels()
+dfII <- Illumina450Manifest_clean %>% filter(Infinium_Design_Type == "II") %>% droplevels()
+
+# Get beta values for Infinium I and II
+beta <- getBeta(MSet.raw)
+beta_I <- beta[rownames(beta) %in% dfI$IlmnID, ]
+beta_II <- beta[rownames(beta) %in% dfII$IlmnID, ]
+
+# Remove rows with all NAs
+beta_I <- beta_I[rowSums(is.na(beta_I)) != ncol(beta_I), ]
+beta_II <- beta_II[rowSums(is.na(beta_II)) != ncol(beta_II), ]
+
+# Calculate densities for raw means and sds
+mean_beta_I <- rowMeans(beta_I, na.rm = TRUE)
+mean_beta_I <- na.omit(mean_beta_I)
+density_mean_beta_I <- density(mean_beta_I)
+
+mean_beta_II <- rowMeans(beta_II, na.rm = TRUE)
+mean_beta_II <- na.omit(mean_beta_II)
+density_mean_beta_II <- density(mean_beta_II)
+
+sd_beta_I <- apply(beta_I, 1, sd, na.rm = TRUE)
+sd_beta_I <- na.omit(sd_beta_I)
+density_sd_of_beta_I <- density(sd_beta_I)
+
+sd_beta_II <- apply(beta_II, 1, sd, na.rm = TRUE)
+sd_beta_II <- na.omit(sd_beta_II)
+density_sd_of_beta_II <- density(sd_beta_II)
+
+# Apply SWAN normalization
+RGSet_SWAN <- preprocessSWAN(RGset)
+
+# Get beta values for Infinium I and II after SWAN normalization
+beta_SWAN <- getBeta(RGSet_SWAN)
+beta_I_SWAN <- beta_SWAN[rownames(beta_SWAN) %in% dfI$IlmnID, ]
+beta_II_SWAN <- beta_SWAN[rownames(beta_SWAN) %in% dfII$IlmnID, ]
+
+# Remove rows with all NAs
+beta_I_SWAN <- beta_I_SWAN[rowSums(is.na(beta_I_SWAN)) != ncol(beta_I_SWAN), ]
+beta_II_SWAN <- beta_II_SWAN[rowSums(is.na(beta_II_SWAN)) != ncol(beta_II_SWAN), ]
+
+# Calculate densities for SWAN means and sds
+mean_beta_I_SWAN <- rowMeans(beta_I_SWAN, na.rm = TRUE)
+mean_beta_I_SWAN <- na.omit(mean_beta_I_SWAN)
+density_mean_beta_I_SWAN <- density(mean_beta_I_SWAN)
+
+mean_beta_II_SWAN <- rowMeans(beta_II_SWAN, na.rm = TRUE)
+mean_beta_II_SWAN <- na.omit(mean_beta_II_SWAN)
+density_mean_beta_II_SWAN <- density(mean_beta_II_SWAN)
+
+sd_beta_I_SWAN <- apply(beta_I_SWAN, 1, sd, na.rm = TRUE)
+sd_beta_I_SWAN <- na.omit(sd_beta_I_SWAN)
+density_sd_of_beta_I_SWAN <- density(sd_beta_I_SWAN)
+
+sd_beta_II_SWAN <- apply(beta_II_SWAN, 1, sd, na.rm = TRUE)
+sd_beta_II_SWAN <- na.omit(sd_beta_II_SWAN)
+density_sd_of_beta_II_SWAN <- density(sd_beta_II_SWAN)
+```
+![Density plots](plots/density_plots.png)
 
 ### 8. PCA
 
