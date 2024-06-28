@@ -86,16 +86,16 @@ fluorescence_data <- data.frame(
 rownames(fluorescence_data) <- NULL
 ```
 ```r
-Sample	Red_fluor    Green_fluor    Type
-R01C01	4254	     8361	      II
-R02C01	4584	     10343	      II
-R03C01	4201	     9859	      II
-R04C01	3627	     8552	      II
-R02C02	5669	     1003	      II
-R03C02	7689	     1041	      II
-R04C02	5954	     6336	      II
-R05C02	5989	     761	      II
-
+|Sample | Red_fluor| Green_fluor|Type |
+|:------|---------:|-----------:|:----|
+|R01C01 |      4254|        8361|II   |
+|R02C01 |      4584|       10343|II   |
+|R03C01 |      4201|        9859|II   |
+|R04C01 |      3627|        8552|II   |
+|R02C02 |      5669|        1003|II   |
+|R03C02 |      7689|        1041|II   |
+|R04C02 |      5954|        6336|II   |
+|R05C02 |      5989|         761|II   |
 ```
 
 ### 4. Create the Object MSet.raw
@@ -113,16 +113,45 @@ MSet.raw <- preprocessRaw(RGset)
 
 Quality control is crucial to ensure data integrity. We visualize the control probes and other quality metrics.
 
+##### 5.1 QCplot
 ```r
 # Quality check
 qc <- qcReport(RGset, pdf = "QCReport.pdf")
 ```
 ![QC plot](plots/QCplot.png)
 
+##### 5.2 Negative control intensity check
 ```r
 controlStripPlot(RGset, controls="NEGATIVE")
 ```
 ![Control strip plot](plots/ControlStripPlot.png)
+
+##### 5.3 Failed positions
+```r
+detP <- detectionP(RGset) 
+threshold <- 0.05
+failed <- detP > threshold
+failed_positions <- colSums(failed)
+
+# Summarize failed positions per sample
+failed_positions_summary <- data.frame(
+  Sample = sapply(strsplit(rownames(failed_positions_summary), "_"), `[`, 2),
+  n_Failed_positions = failed_positions
+)
+```
+
+```r
+|Sample | n_Failed_positions|
+|:------|------------------:|
+|R01C01 |                 45|
+|R02C01 |                 26|
+|R03C01 |                 28|
+|R04C01 |                 32|
+|R02C02 |                190|
+|R03C02 |                130|
+|R04C02 |                 17|
+|R05C02 |                406|
+```
 
 ### 6. Beta and M Values
 
