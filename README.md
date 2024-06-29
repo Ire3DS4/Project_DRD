@@ -254,16 +254,16 @@ text(pca_results$x[, 1], pca_results$x[, 2], labels = rownames(pca_results$x), c
 legend("bottomright", legend = levels(targets$Group), col = 1:nlevels(targets$Group), pch = 2)
 
 # Define the palette for the second plot
-palette(c("#0066CC", "#FF9999"))
+palette(c("#FF9999","#0066CC"))
 
 # Set shapes for sexes
-sex_shapes <- c("M" = -0x2642L, "F" = -0x2640L)
+gender <- c("M" =-0x2640L, "F" = -0x2642L)
 
 # Plot the second PCA plot
-plot(pca_results$x[, 1], pca_results$x[, 2], cex = 1.5, pch = sex_shapes[targets$Sex], col = targets$Group,
+plot(pca_results$x[, 1], pca_results$x[, 2], cex = 1.5, pch = gender[samplesheet$Sex], col = samplesheet$Sex,
      xlab = "PC1", ylab = "PC2", xlim = c(-1000, 1000), ylim = c(-1000, 1000))
 text(pca_results$x[, 1], pca_results$x[, 2], labels = rownames(pca_results$x), cex = 0.5, pos = 1)
-legend("bottomright", legend=c("M", "F"),  col = c(1, 2), pch = c(-0x2642L, -0x2640L))
+legend("bottomright", legend=levels(samplesheet$Sex),  col = c(1:nlevels(samplesheet$Sex)), pch = gender)
 ```
 ![PCA](plots/PCA.png)
 
@@ -274,8 +274,31 @@ legend("bottomright", legend=c("M", "F"),  col = c(1, 2), pch = c(-0x2642L, -0x2
 We identify differentially methylated positions (DMPs) between WT and MUT groups.
 
 ```r
-# Differential Methylation Analysis
-dmp <- dmpFinder(beta_norm, pheno_data$Group, type = "categorical")
+# Define the Mann-Whitney test function
+mann_whitney_function <- function(x) {
+  mw_test <- wilcox.test(x ~ samplesheet$Group)
+  return(mw_test$p.value)
+}
+
+# Apply the Mann-Whitney test function to each row
+pValues_mw <- apply(beta_SWAN, 1, mann_whitney_function)
+
+# Create a data frame with beta_SWAN values and p-values
+final_mw <- data.frame(beta_SWAN, pValues_mw)
+final_mw <- final_mw[order(final_mw$pValues_mw),]
+
+kable(head(final_mw))
+```
+
+```r
+|           |    R01C01|    R02C01|    R03C01|    R04C01|    R02C02|    R03C02|    R04C02|    R05C02| pValues_mw|
+|:----------|---------:|---------:|---------:|---------:|---------:|---------:|---------:|---------:|----------:|
+|cg00213748 | 0.2777314| 0.3372835| 0.2045174| 0.2201194| 0.4057508| 0.5284373| 0.1543795| 0.5701699|  0.0285714|
+|cg03695421 | 0.6010456| 0.5258785| 0.5548383| 0.6055536| 0.3597617| 0.3828982| 0.5661921| 0.4789849|  0.0285714|
+|cg03750315 | 0.0372150| 0.0832797| 0.0783755| 0.0469863| 0.4076923| 0.5841331| 0.0819713| 0.6150070|  0.0285714|
+|cg04462340 | 0.5775066| 0.6244629| 0.6105699| 0.5876364| 0.6503774| 0.7740079| 0.5694384| 0.7376289|  0.0285714|
+|cg05865243 | 0.9347685| 0.8886810| 0.9297675| 0.9290992| 0.8540680| 0.7643448| 0.9136085| 0.4238579|  0.0285714|
+|cg07939587 | 0.9096406| 0.8340026| 0.9367562| 0.9060452| 0.8742059| 0.7265625| 0.9315922| 0.5153986|  0.0285714|
 ```
 
 ### 10. Multiple Test Correction
@@ -284,7 +307,16 @@ Adjust p-values for multiple testing to control the false discovery rate (FDR).
 
 ```r
 # Multiple test correction
-dmp$adj.P.Val <- p.adjust(dmp$P.Value, method = "BH")
+corrected_pValues_Bonf <- p.adjust(final_mw$pValues_mw,"bonferroni")
+corrected_pValues_BH <- p.adjust(final_mw$pValues_mw,"BH")
+final_mw_corr <- data.frame(sum(final_mw <= 0.05), sum(corrected_pValues_Bonf <= 0.05), sum(corrected_pValues_BH <= 0.05))
+kable(final_mw_corr)
+```
+
+```r
+| sum.final_mw....0.05.| sum.corrected_pValues_Bonf....0.05.| sum.corrected_pValues_BH....0.05.|
+|---------------------:|-----------------------------------:|---------------------------------:|
+|                357403|                                   0|                                 0|
 ```
 
 ### 11. Volcano and Manhattan Plots
