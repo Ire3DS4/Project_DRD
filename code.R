@@ -271,7 +271,17 @@ points(HighLight[,1], HighLight[,2], pch=17, cex=0.6, col="#CC00FF")
 
 dev.off()
 
+final_mw_corr_df <- data.frame(rownames(final_mw_corr), final_mw_corr)
+colnames(final_mw_corr_df)[1] <- "IlmnID"
 
+final_mw_corr_ann <- merge(final_mw_corr_df, Illumina450Manifest_clean, by = "IlmnID")
+
+input_Manhattan <- data.frame(id = final_mw_corr_ann$IlmnID, 
+                              chr = final_mw_corr_ann$CHR, 
+                              map = final_mw_corr_ann$MAPINFO, 
+                              pval = final_mw_corr_ann$pValues_mw)
+
+kable(head(input_Manhattan))
 
 
 
