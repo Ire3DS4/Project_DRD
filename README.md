@@ -1,6 +1,8 @@
 # Infinium Methylation Data Analysis
 
-This project focuses on analyzing Infinium methylation data using R. The workflow includes several steps: loading raw data, preprocessing, normalization, quality checks, visualization, and statistical analysis. Each step is designed to ensure accurate and meaningful results from the methylation data.
+This project for the exam of DNA/RNA Dynamics focuses on analyzing Infinium methylation data using R.
+
+P.S: in the README file there are going to be code snippets as well as interpretations of the results and various plots; for the complete code please look at 'R code'.
 
 ## Table of Contents
 1. [Introduction](#introduction)
@@ -11,13 +13,21 @@ This project focuses on analyzing Infinium methylation data using R. The workflo
 
 ## Introduction
 
-Methylation analysis is crucial for understanding epigenetic modifications that affect gene expression without changing the DNA sequence. This project uses Infinium methylation arrays to measure DNA methylation at specific CpG sites. The steps include loading raw data, preprocessing, normalization, visualization, and statistical analysis to identify patterns and differences between groups (e.g., wild type (WT) and mutant (MUT)).
+The following pipeline is designed to analyze DNA methylation data from the Illumina HumanMethylation450 BeadChip platform, a popular tool for genome-wide methylation studies. The Infinium assay provides insights into DNA methylation patterns, which are crucial for understanding various biological processes and disease mechanisms.
+
+This repository offers a comprehensive, user-friendly pipeline for processing, analyzing, and interpreting methylation data from the Infinium platform.
+
+### Workflow Overview
+Quality Control: Assess data quality to identify potential issues or biases.
+Preprocessing: Apply normalization techniques to reduce technical variations and batch effects.
+Differential Methylation Analysis: Identify differentially methylated regions (DMRs) or CpG sites associated with specific conditions or phenotypes.
+Visualization: Create informative plots to visualize DNA methylation patterns and results.
 
 ## Data Preparation
 
 ### 1. Load Raw Data
 
-First, we load the necessary libraries and raw data files. The raw data files include methylation intensity values for different samples.
+Begin by loading the raw data files, which contain intensity values for both methylated and unmethylated probes across samples. This step ensures that the data is correctly formatted for subsequent analyses.
 
 ```r
 # Load necessary libraries
@@ -35,7 +45,7 @@ RGset <- read.metharray.exp(targets = targets)
 
 ### 2. Create R/G Dataframes
 
-The Red and Green signal intensities are stored in separate data frames.
+Separate the raw intensity data into red and green channels. This distinction helps in identifying the chemistry of the probes and is essential for analyzing the fluorescence signals accurately.
 
 ```r
 # Create R/G dataframes
@@ -56,7 +66,7 @@ dim(Green)
 
 ### 3. Check Probe Info by Address
 
-Probe information is essential for identifying and filtering relevant data.
+To determine the probe type, refer to the manifest file from Illumina, which categorizes probes into Type I or Type II. This classification is important because Type II probes use only one color channel, whereas Type I probes use both.
 
 ```r
 # Check probe info by address
@@ -78,29 +88,34 @@ probe_type = Illumina450Manifest_clean[Illumina450Manifest_clean$AddressA_ID==ad
 # Create and fill the fluorescence_data dataframe
 
 fluorescence_data <- data.frame(
-  Sample = sapply(strsplit(rownames(fluorescence_data), "_"), `[`, 2),
+  Sample = colnames(Red),
   Red_fluor = Red_fluor,
   Green_fluor = Green_fluor,
-  Type = probe_type
+  Type = probe_type,
+  Color = 'NA'
 )
+fluorescence_data$Sample <- sapply(strsplit(rownames(fluorescence_data), "_"), `[`, 2)
 rownames(fluorescence_data) <- NULL
 ```
+
 ```r
-|Sample | Red_fluor| Green_fluor|Type |
-|:------|---------:|-----------:|:----|
-|R01C01 |      4254|        8361|II   |
-|R02C01 |      4584|       10343|II   |
-|R03C01 |      4201|        9859|II   |
-|R04C01 |      3627|        8552|II   |
-|R02C02 |      5669|        1003|II   |
-|R03C02 |      7689|        1041|II   |
-|R04C02 |      5954|        6336|II   |
-|R05C02 |      5989|         761|II   |
+|Sample | Red_fluor| Green_fluor|Type |Color |
+|:------|---------:|-----------:|:----|:-----|
+|R01C01 |      4254|        8361|II   |NA    |
+|R02C01 |      4584|       10343|II   |NA    |
+|R03C01 |      4201|        9859|II   |NA    |
+|R04C01 |      3627|        8552|II   |NA    |
+|R02C02 |      5669|        1003|II   |NA    |
+|R03C02 |      7689|        1041|II   |NA    |
+|R04C02 |      5954|        6336|II   |NA    |
+|R05C02 |      5989|         761|II   |NA    |
 ```
+Notice that the assigned probes are of Infinium II design, hence no color channel needs to be specified since type II probes use a single bead type for both methylated and unmethylated states and measure the intensities of the two states using the same color channel. As a result, Type II probes do not require separate color information for the red or green channels because they are not differentiated by color.
 
 ### 4. Create the Object MSet.raw
 
-We create the `MSet.raw` object which holds the methylation data.
+The `MSet.raw` object contains methylated and unmethylated signal intensities, facilitating further analysis of methylation levels.
+
 ```r
 # Create MSet.raw object
 MSet.raw <- preprocessRaw(RGset)
@@ -111,9 +126,12 @@ MSet.raw <- preprocessRaw(RGset)
 
 ### 5. Quality Check
 
-Quality control is crucial to ensure data integrity. We visualize the control probes and other quality metrics.
+QCplot visualizes the median intensities of methylation and unmethylation signals. High median values in both distributions indicate good data quality. However, the plot has limitations, such as not accounting for background signals or potential sample preparation failures.
 
 ##### 5.1 QCplot
+
+The plot shows clustering of samples with high median values, indicating good quality data. Low median values suggest poor quality, which can affect downstream analyses.
+
 ```r
 # Quality check
 qc <- qcReport(RGset, pdf = "QCReport.pdf")
@@ -121,6 +139,9 @@ qc <- qcReport(RGset, pdf = "QCReport.pdf")
 ![QC plot](plots/QCplot.png)
 
 ##### 5.2 Negative control intensity check
+
+Negative control probes estimate system background intensity. Normally, these values range from 100 to 1000 units. High values may indicate degraded DNA, affecting data quality. Using controlStripPlot(), we can check the intensity levels, with higher values indicating potential issues.
+
 ```r
 controlStripPlot(RGset, controls="NEGATIVE")
 ```
@@ -128,16 +149,17 @@ controlStripPlot(RGset, controls="NEGATIVE")
 
 ##### 5.3 Failed positions
 ```r
-detP <- detectionP(RGset) 
-threshold <- 0.05
-failed <- detP > threshold
+# Calculate detection pValues
+
 failed_positions <- colSums(failed)
 
 # Summarize failed positions per sample
 failed_positions_summary <- data.frame(
-  Sample = sapply(strsplit(rownames(failed_positions_summary), "_"), `[`, 2),
+  Sample = colnames(failed),
   n_Failed_positions = failed_positions
 )
+failed_positions_summary$Sample <- sapply(strsplit(rownames(failed_positions_summary), "_"), `[`, 2)
+rownames(failed_positions_summary) <- NULL
 ```
 
 ```r
