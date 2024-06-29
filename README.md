@@ -346,21 +346,33 @@ kable(final_mw_corr)
 Visualize DMPs with volcano and Manhattan plots.
 
 ```r
-# Volcano plot
-volcano <- function(dmp) {
-  plot(dmp$logFC, -log10(dmp$adj.P.Val), pch = 20, main = "Volcano Plot", xlab = "Log Fold Change", ylab = "-log10 Adjusted P-value")
-  abline(h = -log10(0.05), col = "red")
-}
-volcano(dmp)
+# WT group mean
+WT_group <- final_mw_corr[,targets$Group=="WT"]
+WT_group_mean <- apply(WT_group, 1, mean)
 
-# Manhattan plot
-manhattan <- function(dmp) {
-  library(qqman)
-  dmp$CHR <- as.numeric(factor(dmp$CHR))
-  manhattan(dmp, chr = "CHR", bp = "BP", p = "P.Value", main = "Manhattan Plot")
-}
-manhattan(dmp)
+# MUT group mean
+MUT_group <- final_mw_corr[,targets$Group=="MUT"]
+MUT_group_mean <- apply(MUT_group, 1, mean)
+
+# Compute delta
+delta <- WT_group_mean - MUT_group_mean
+
+#create a dataframe
+toVolcPlot <- data.frame(delta, -log10(final_mw_corr$pValues_mw))
+kable(head(toVolcPlot))
 ```
+
+```r
+|           |      delta| X.log10.final_mw_corr.pValues_mw.|
+|:----------|----------:|---------------------------------:|
+|cg00213748 | -0.1046692|                          1.544068|
+|cg03695421 |  0.1565745|                          1.544068|
+|cg03750315 | -0.1773085|                          1.544068|
+|cg04462340 | -0.0461887|                          1.544068|
+|cg05865243 |  0.1515448|                          1.544068|
+|cg07939587 |  0.1439945|                          1.544068|
+```
+![Volcano Plot](plots/VolcanoPlot.png)
 
 ### 12. Heatmap
 
