@@ -283,13 +283,41 @@ input_Manhattan <- data.frame(id = final_mw_corr_ann$IlmnID,
 
 kable(head(input_Manhattan))
 
+# png(filename = "ManhattanPlot.png", width = 800, height = 600)
+par(mfrow=c(1,1))
 
+manhattan(input_Manhattan, snp = "id", chr = "chr", bp = "map", p = "pval", suggestiveline = -log10(0.05), col = rainbow(24), annotateTop = F)
+dev.off()
 
+# 12
+input_heatmap=as.matrix(final_mw[1:100,1:8])
 
+wt <- targets[targets$Group=="WT", "Basename"]
+wt <- sub("^[^_]+_", "", wt)
+group_color = c()
+i = 1
 
+for (name in colnames(beta)){
+  if (name %in% wt){group_color[i]="#0067E6"}
+  else{group_color[i]="#E50068"}
+  i = i+1
+}
 
+# png(filename = "CompleteLinkage", width = 800, height = 600)
+# par(mfrow=c(1,1))
+heatmap.2(input_heatmap,col=viridis(100),Rowv=T,Colv=T,dendrogram="both",key=T,ColSideColors=group_color,density.info="none",trace="none",scale="none",symm=F,main="Complete linkage",key.xlab='beta-val',key.title=NA,keysize=1,labRow=NA)
+legend("topright", legend=levels(targets$Group),col=c('#E50068','#0067E6'),pch = 19,cex=0.7)
+dev.off()
 
+# png(filename = "SingleLinkage.png", width = 800, height = 600)
+# par(mfrow=c(1,1))
+heatmap.2(input_heatmap,col=viridis(100),Rowv=T,Colv=T,hclustfun = function(x) hclust(x,method = 'single'),dendrogram="both",key=T,ColSideColors=group_color,density.info="none",trace="none",scale="none",symm=F,main="Single linkage",key.xlab='beta-val',key.title=NA,keysize=1,labRow=NA)
+legend("topright", legend=levels(targets$Group),col=c('#FF6600','#CC00CC'),pch = 19,cex=0.7)
+dev.off()
 
-
-
-
+# png(filename = "AverageLinkage.png", width = 800, height = 600)
+# par(mfrow=c(1,1))
+heatmap.2(input_heatmap,col=viridis,Rowv=T,Colv=T,hclustfun = function(x) hclust(x,method = 'average'),dendrogram="both",key=T,ColSideColors=group_color
+          ,density.info="none",trace="none",scale="none",symm=F,main="Average linkage",key.xlab='beta-val',key.title=NA,keysize=1,labRow=NA)
+legend("topright", legend=levels(targets$Group),col=c('#E50068','#0067E6'),pch = 19,cex=0.7)
+dev.off()
