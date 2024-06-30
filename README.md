@@ -140,7 +140,7 @@ Negative control probes estimate system background intensity. Normally, these va
 ```r
 controlStripPlot(RGset, controls="NEGATIVE")
 ```
-![Control strip plot](plots/ControlStripPlot.png)
+![Control strip plot](plots/controlStripPlot_NEGATIVE.png)
 
 ##### 5.3 Failed positions
 ```r
