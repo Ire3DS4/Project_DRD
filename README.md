@@ -341,7 +341,6 @@ Visualize DMPs with volcano and Manhattan plots.
 Combines fold change and significance to highlight differentially methylated probes.
 
 The X-axis shows the difference in methylation between groups (log2 fold change), while the Y-axis shows the statistical significance (-log10(p-value)).
-Points with large fold changes and high significance appear in the upper left and right corners, while non-significant points are near the bottom.
 
 ```r
 # WT and MUT group means
@@ -370,11 +369,12 @@ kable(head(toVolcPlot))
 ```
 ![Volcano Plot](plots/VolcanoPlot.png)
 
+Points with large fold changes and high significance appear in the upper left and right corners, while non-significant points are near the bottom.
+
 ##### 11.2 Manhattan Plot
 Displays p-values across the genome.
 
 The X-axis shows the genomic coordinates, while the Y-axis shows the statistical significance (-log10(p-value)), as the Y-axis of the Volcano plot.
-Peaks indicate genomic regions with significant differential methylation, while horizontal lines show significance thresholds.
 
 ```r
 final_mw_corr_df <- data.frame(IlmnID = rownames(final_mw_corr), final_mw_corr)
