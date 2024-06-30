@@ -67,7 +67,7 @@ dim(Green)          ## [1] 622399      8
 
 ### 3. Check Probe Info by Address
 
-To determine the probe type, refer to the manifest file from Illumina, which categorizes probes into Type I or Type II. This classification is important because Type II probes use only one color channel, whereas Type I probes use both.
+To determine the probe type, refer to the manifest file from Illumina (find the link in `Additional resources`), which categorizes probes into Type I or Type II. This classification is important because Type II probes use only one color channel, whereas Type I probes use both.
 
 ```r
 # Check probe info by address
