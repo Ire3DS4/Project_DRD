@@ -183,10 +183,6 @@ Most of these samples have very low percentages of failed probes, indicating hig
 
 ### 6. Beta and M Values
 
-### Methylation Levels Representation
-
-### Methylation Levels Representation
-
 Methylation levels are continuous values between 0 and 1, obtained from fluorescence intensities. These levels can be represented as:
 
 - **Beta Values (β-values)**: Represent the proportion of methylation at a CpG site (0 to 1).
@@ -200,17 +196,24 @@ From these formulas, the conversion between Beta and M values can be derived as:
 - $\( \beta_i = \frac{2^{M_i}}{2^{M_i} + 1} \)$
 - $\( M_i = \log_2 \left( \frac{\beta_i}{1 - \beta_i} \right) \)$
 
-
 ```r
 # Calculate Beta and M values
 beta <- getBeta(MSet.raw)
 M <- getM(MSet.raw)
 ```
 ![Beta and M plots](plots/BetaMvalues.png)
+Both WT and MUT groups show similar distribution patterns in Beta and M values, indicating bimodal distributions (peaks around 0.1 and 0.9 for Beta values). The similarity in distributions suggests no significant overall differences in methylation levels between WT and MUT groups, however, the central values in the WT group are slightly lower and the peaks values are slightly higher.
 
 ### 7. Functional Normalization
 
-Normalization adjusts for technical variation between samples.
+Normalization in methylation analysis is crucial for adjusting technical variations across samples, ensuring accurate biological comparisons. SWAN (Subset-quantile Within Array Normalization) extends standard methods like quantile normalization by integrating known covariates that capture unwanted technical variability. Specifically, for Illumina Infinium HumanMethylation450k arrays, SWAN utilizes principal components derived from control probes to selectively correct technical biases while preserving biological variability.
+
+The resulting output from SWAN normalization typically includes a plot with 6 panels. Each panel contrasts raw and normalized data, featuring:
+- Density plots depicting beta mean values categorized by probe chemistry.
+- Density plots illustrating beta standard deviation values based on probe chemistry.
+- Boxplots showing the distribution of beta values across samples.
+
+This approach ensures that methylation data reflects meaningful biological differences rather than being obscured by technical artifacts, thereby enhancing the reliability of research findings and clinical interpretations in DNA methylation studies.
 
 ```r
 # Apply SWAN normalization
@@ -224,16 +227,19 @@ dfI <- Illumina450Manifest_clean %>% filter(Infinium_Design_Type == "I") %>% dro
 dfII <- Illumina450Manifest_clean %>% filter(Infinium_Design_Type == "II") %>% droplevels()
 ```
 ![Density plots](plots/density_plots.png)
+Functional Normalization led to noticeable changes: initially, the mean density of the raw data highlighted distinct differences between the two probe types, whereas post-normalization, these differences diminished, resulting in more overlap. Examining the boxplot, the raw data exhibited greater variability compared to the normalized data. Furthermore, after normalization, the median and first quartile (Q1) values shifted towards lower values.
 
 ### 8. PCA
 
-Principal Component Analysis (PCA) reduces data dimensionality and helps visualize sample clustering.
+Principal Component Analysis (PCA) reduces data dimensionality and helps visualize sample clustering. On the X and Y axes there are the Principal Components (PCs) explaining most variance.
+Clustering of samples indicates similarity, while separation between groups (e.g., WT vs. MUT) along principal components suggests significant differences.
 
 ```r
 # Perform PCA
 pca_results <- prcomp(t(beta_SWAN), scale. = TRUE)
 ```
 ![PCA](plots/PCA.png)
+The groups primarily segregate based on PC1, where most of the wild types (WTs) have lower PC1 values compared to mutants (MUTs), which predominantly occupy the higher PC1 range. While WTs form a cohesive cluster also considering PC2, MUTs show varying PC2 values, except for R02C02 and R03C02, which cluster closely together. Notably, R02C01, despite being a MUT, clusters with the WTs. PC1 also reveals a clear separation by sex on the graph. Males cluster tightly together across PC1 and PC2, whereas females exhibit three distinct clusters dispersed across different PC2 levels.
 
 ```r
 var_explained <- pca_results$sdev^2 / sum(pca_results$sdev^2) * 100
@@ -244,12 +250,14 @@ eig_df <- data.frame(
 )
 ```
 ![PCA variance](plots/PCA_variance.png)
+Notice that the first two PCs explain the 53.1% of the variance.
 
 ## Visualization and Analysis
 
 ### 9. Differential Methylation Analysis
 
 We identify differentially methylated positions (DMPs) between WT and MUT groups.
+Differential Methylation Analysis aims to identify changes in DNA methylation patterns between different conditions; DNA methylation, primarily occurring at CpG sites, can regulate gene expression and by comparing methylation levels between groups, it's possible to uncover epigenetic changes associated with diseases or other conditions.
 
 ```r
 # Define the Mann-Whitney test function
@@ -279,10 +287,14 @@ kable(head(final_mw))
 |cg07939587 | 0.9095799| 0.8335510| 0.9359694| 0.9051271| 0.9045411| 0.7254902| 0.9313836| 0.5163043|  0.0285714|
 ```
 ![p-value distribution variance](plots/pvalue_distribution.png)
+SWAN (Subset-quantile Within Array Normalization) is a non-parametric normalization method. It does not assume a specific distribution of the data but instead adjusts for technical biases by aligning subsets of the data (quantiles) within each array. These values are discrete because they represent the probability of observing the data under the null hypothesis, computed at specific points and not as a continuous distribution.
 
 ### 10. Multiple Test Correction
 
-Adjust p-values for multiple testing to control the false discovery rate (FDR).
+When conducting numerous statistical tests, some will show significance just by chance. Multiple test correction methods adjust p-values to control for this:
+
+- Bonferroni Correction: divides the significance threshold by the number of tests. It's very stringent and can reduce false positives but increase false negatives.
+- Benjamini-Hochberg (BH) Correction: controls the false discovery rate (FDR), balancing false positives and false negatives. It’s less stringent than Bonferroni.
 
 ```r
 # Multiple test correction
@@ -299,7 +311,7 @@ rownames(diff_meth_probes) <- c("Differentially methylated probes")
 
 kable(diff_meth_probes)
 ```
-
+There were 53343 probes identified as differentially methylated. However, after correcting for multiple testing using both Bonferroni and BH methods, none of these probes remained statistically significant. This outcome suggests that the initial findings of differential methylation were likely due to chance or false positives.
 ```r
 |                                 | before_corr| after_Bonf| after_BH|
 |:--------------------------------|-----------:|----------:|--------:|
@@ -312,6 +324,13 @@ kable(diff_meth_probes)
 Visualize DMPs with volcano and Manhattan plots.
 
 ##### 11.1 Volcano plot
+Combines fold change and significance to highlight differentially methylated probes.
+
+X-axis: Log2 fold change (difference in methylation between groups)
+Y-axis: -log10(p-value) (statistical significance)
+
+Points with large fold changes and high significance appear in the upper left and right corners, while non-significant points are near the bottom.
+
 ```r
 # WT and MUT group means
 WT_group <- final_mw_corr[, targets$Group == "WT"]
@@ -340,6 +359,13 @@ kable(head(toVolcPlot))
 ![Volcano Plot](plots/VolcanoPlot.png)
 
 ##### 11.2 Manhattan Plot
+Displays p-values across the genome.
+
+X-axis: Genomic coordinates
+Y-axis: -log10(p-value)
+
+Peaks indicate genomic regions with significant differential methylation, while horizontal lines show significance thresholds.
+
 ```r
 final_mw_corr_df <- data.frame(IlmnID = rownames(final_mw_corr), final_mw_corr)
 final_mw_corr_ann <- merge(final_mw_corr_df, Illumina450Manifest_clean, by = "IlmnID")
@@ -361,10 +387,11 @@ kable(head(input_Manhattan))
 |cg00000289 |  14|  69341139| 0.4857143|
 ```
 ![Manhattan Plot](plots/ManhattanPlot.png)
+Notice that both the Volcano plot and the Manhattan plot exhibit "stratified" data due to the use of a non-parametric test.
 
 ### 12. Heatmap
 
-Heatmaps visualize methylation patterns across samples.
+A heat map displays the methylation levels of CpG sites across multiple samples. Rows represent individual CpG sites, columns represent samples, and the color intensity indicates the degree of methylation (e.g., from unmethylated to fully methylated). Heat maps are useful for visualizing patterns of methylation, identifying clusters of similar samples, and spotting differentially methylated regions.
 
 ```r
 # Matrix creation
