@@ -214,10 +214,10 @@ Both WT and MUT groups show similar distribution patterns in Beta and M values, 
 
 Normalization in methylation analysis is crucial for adjusting technical variations across samples, ensuring accurate biological comparisons. SWAN (Subset-quantile Within Array Normalization) extends standard methods like quantile normalization by integrating known covariates that capture unwanted technical variability. Specifically, for Illumina Infinium HumanMethylation450k arrays, SWAN utilizes principal components derived from control probes to selectively correct technical biases while preserving biological variability.
 
-The resulting output from SWAN normalization typically includes a plot with 6 panels. Each panel contrasts raw and normalized data, featuring:
-- Density plots depicting beta mean values categorized by probe chemistry.
-- Density plots illustrating beta standard deviation values based on probe chemistry.
-- Boxplots showing the distribution of beta values across samples.
+The resulting output from SWAN normalization includes a plot with 6 panels. Each panel contrasts raw and normalized data, featuring:
+- density plots depicting beta mean values categorized by probe chemistry
+- density plots illustrating beta standard deviation values based on probe chemistry
+- boxplots showing the distribution of beta values across samples
 
 This approach ensures that methylation data reflects meaningful biological differences rather than being obscured by technical artifacts, thereby enhancing the reliability of research findings and clinical interpretations in DNA methylation studies.
 
