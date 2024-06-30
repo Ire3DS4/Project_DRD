@@ -24,14 +24,10 @@ This repository offers a comprehensive, user-friendly pipeline for processing, a
 *Visualization:* Create informative plots to visualize DNA methylation patterns and results.
 
 ## Data Preparation
+
 ### 0. Libraries
 The minfi package in R is used for analyzing methylation data from Infinium methylation arrays. It handles raw data, quality control, preprocessing, and downstream analyses. The RGChannelSet object stores raw signal intensities from the red and green channels, which is crucial for assessing DNA methylation levels across the genome.
 All the other libraries serve specific purposes in data analysis, visualization, and genomic research.
-
-### 1. Load Raw Data
-
-Begin by loading the raw data files, which contain intensity values for both methylated and unmethylated probes across samples. This step ensures that the data is correctly formatted for subsequent analyses.
-
 ```r
 # Load necessary libraries
 library(minfi)
@@ -44,7 +40,13 @@ library(qqman)
 library(gplots)
 library(ggplot2)
 library(viridis)
+```
 
+### 1. Load Raw Data
+
+Begin by loading the raw data files, which contain intensity values for both methylated and unmethylated probes across samples. This step ensures that the data is correctly formatted for subsequent analyses.
+
+```r
 # Load raw data
 baseDir <- ('Input')
 targets <- read.metharray.sheet(baseDir)
