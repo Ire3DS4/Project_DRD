@@ -428,6 +428,6 @@ This project provides a comprehensive analysis of Infinium methylation data, inc
 
 ### Additional Resources
 - [minfi package documentation](https://bioconductor.org/packages/release/bioc/html/minfi.html)
-- [Infinium Methylation Assay overview](https://www.illumina.com/techniques/microarrays/microarray-kits/infinium-methylation-assay.html)
+- [Infinium Methylation Assay overview](http://support.illumina.com/array/array_kits/infinium_humanmethylation450_beadchip_kit/downloads.html)
 
 By following this guide, you can replicate the analysis and gain insights into methylation patterns in your data.
