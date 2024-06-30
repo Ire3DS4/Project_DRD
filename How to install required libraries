@@ -1,0 +1,11 @@
+if (!require("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+BiocManager::install(version = "3.18")
+
+BiocManager::install("minfi")
+BiocManager::install("knitr")
+BiocManager::install("IlluminaHumanMethylation450kmanifest")
+BiocManager::install("IlluminaHumanMethylationEPICmanifest")
+BiocManager::install("IlluminaHumanMethylationEPICanno.ilm10b2.hg19")
+
+install.packages(c("qqman", "gplots", "viridis", "ggplot2"))
