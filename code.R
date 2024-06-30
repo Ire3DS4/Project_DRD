@@ -5,7 +5,10 @@ library(IlluminaHumanMethylationEPICmanifest)
 library(IlluminaHumanMethylationEPICanno.ilm10b2.hg19)
 library(knitr)
 library(dplyr)
-library(factoextra) ###
+library(qqman)  
+library(gplots)
+library(viridis)
+library(factoextra) 
 
 # 1
 baseDir <- ('Input')
@@ -193,6 +196,7 @@ boxplot(beta_SWAN, col = targets$Group, names = colnames(beta_SWAN), main = "SWA
 par(mfrow = c(1, 1))
 dev.off()
 
+# 8
 pca_results <- prcomp(t(beta_SWAN), scale. = TRUE)
 
 # png("PCA.png", width = 1200, height = 600)
