@@ -18,10 +18,10 @@ The following pipeline is designed to analyze DNA methylation data from the Illu
 This repository offers a comprehensive, user-friendly pipeline for processing, analyzing, and interpreting methylation data from the Infinium platform.
 
 ### Workflow Overview
-*Quality Control:* Assess data quality to identify potential issues or biases.
-*Preprocessing:* Apply normalization techniques to reduce technical variations and batch effects.
-*Differential Methylation Analysis:* Identify differentially methylated regions (DMRs) or CpG sites associated with specific conditions or phenotypes.
-*Visualization:* Create informative plots to visualize DNA methylation patterns and results.
+- *Quality Control:* Assess data quality to identify potential issues or biases.
+- *Preprocessing:* Apply normalization techniques to reduce technical variations and batch effects.
+- *Differential Methylation Analysis:* Identify differentially methylated regions (DMRs) or CpG sites associated with specific conditions or phenotypes.
+- *Visualization:* Create informative plots to visualize DNA methylation patterns and results.
 
 ## Data Preparation
 
