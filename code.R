@@ -13,10 +13,10 @@ library(viridis)
 # 1
 baseDir <- ('Input')
 targets <- read.metharray.sheet(baseDir)
-# RGset <- read.metharray.exp(targets = targets)
-# save(RGset, file='RGset.RData')
-load("RGset.RData")
-samplesheet <- read.csv("Input/Samplesheet.csv",header=T, stringsAsFactors=T)
+RGset <- read.metharray.exp(targets = targets)
+save(RGset, file='RGset.RData')                    # note that I could not upload it on GitHubs since even the zipped file is >25MB
+# load("RGset.RData")
+samplesheet <- read.csv("Input/Samplesheet_report_2024.csv",header=T, stringsAsFactors=T)
 
 # 2
 Red <- getRed(RGset)
@@ -32,7 +32,7 @@ if (address %in% rownames(Red) & address %in% rownames(Green))
     Red_fluor <- Red[address, ]
     Green_fluor <- Green[address, ]
 
-load("Illumina450Manifest_clean.RData")
+load("Illumina450Manifest_clean.RData")            
 probe_type = Illumina450Manifest_clean[Illumina450Manifest_clean$AddressA_ID==address, 'Infinium_Design_Type']
 
 fluorescence_data <- data.frame(
@@ -54,11 +54,11 @@ load("MSet_raw.RData")
 
 # 5
 qc <- getQC(MSet.raw)
-# pdf('QCplot.pdf')
+# png("QCplot.png", width = 1200, height = 800)
 plotQC(qc)
 dev.off()
 
-# pdf(file = 'controlStripPlot_NEGATIVE.pdf')
+# png("controlStripPlot_NEGATIVE.png", width = 1200, height = 800)
 controlStripPlot(RGset, controls = 'NEGATIVE')
 dev.off()
 
@@ -100,17 +100,18 @@ M_values_mut <- as.vector(M_values[, mut_indices])
 M_values_wt <- M_values_wt[!is.na(M_values_wt)]
 M_values_mut <- M_values_mut[!is.na(M_values_mut)]
 
+# png("BetaMvalues.png", width = 1200, height = 800)
 par(mfrow = c(1, 2))
 
-plot(density(mean_beta_wt), main = "WT Beta Values", col = "#FF9900")
+plot(density(mean_beta_wt), main = "Beta Values", col = "#FF9900")
 lines(density(mean_beta_mut), col = "#9966FF")
 legend("topright", legend = c("WT", "MUT"), col = c("#FF9900", "#9966FF"), lwd = 3, cex = 0.8)
 
-plot(density(M_values_wt), xlim = c(-8, 8), ylim = c(0, 0.2), main = "WT M Values", col = "#FF9900")
+plot(density(M_values_wt), xlim = c(-8, 8), ylim = c(0, 0.2), main = "M Values", col = "#FF9900")
 lines(density(M_values_mut), col = "#9966FF")
 legend("topright", legend = c("WT", "MUT"), col = c("#FF9900", "#9966FF"), lwd = 3, cex = 0.8)
 
-par(mfrow = c(1, 1))
+dev.off()
 
 # 7
 dfI <- Illumina450Manifest_clean %>% filter(Infinium_Design_Type == "I") %>% droplevels()
@@ -200,9 +201,7 @@ dev.off()
 pca_results <- prcomp(t(beta_SWAN), scale. = TRUE)
 
 # png("PCA.png", width = 1200, height = 600)
-
 par(mfrow = c(1, 2))
-
 palette(c("#FF0000", "#9966FF"))
 
 plot(pca_results$x[, 1], pca_results$x[, 2], cex = 2, pch = 2, col = targets$Group,
@@ -211,7 +210,6 @@ text(pca_results$x[, 1], pca_results$x[, 2], labels = rownames(pca_results$x), c
 legend("bottomright", legend = levels(targets$Group), col = 1:nlevels(targets$Group), pch = 2)
 
 palette(c("#FF9999","#0066CC"))
-
 gender <- c("M" =-0x2640L, "F" = -0x2642L)
 
 plot(pca_results$x[, 1], pca_results$x[, 2], cex = 1.5, pch = gender[samplesheet$Sex], col = samplesheet$Sex,
@@ -243,39 +241,49 @@ mann_whitney_function <- function(x) {
 }
 
 pValues_mw <- apply(beta_SWAN, 1, mann_whitney_function)
-
 final_mw <- data.frame(beta_SWAN, pValues_mw)
 final_mw <- final_mw[order(final_mw$pValues_mw),]
 
+save(final_mw, file = "final_mw.RData")                       # note that I could not upload it on GitHubs since even the zipped file is >25MB
+# load("final_mw.RData")
+
 kable(head(final_mw))
 
-# save(final_mw, file = "final_mw.RData")
-load("final_mw.RData")
+# png(filename = "pvalue_distribution.png", width = 800, height = 600)
 
 hist_res <- hist(final_mw$pValues_mw, main = "P-value distribution (Mann-Whitney test)", xlab = 'p-val', col = "#A9A9A9", border = "#A9A9A9")
 abline(v = 0.05, col = "#EF233C", lwd = 2)
 
+dev.off()
+
 # 10
-corrected_pValues_Bonf <- p.adjust(final_mw$pValues_mw,"bonferroni")
-corrected_pValues_BH <- p.adjust(final_mw$pValues_mw,"BH")
-final_mw_corr <- data.frame(sum(final_mw <= 0.05), sum(corrected_pValues_Bonf <= 0.05), sum(corrected_pValues_BH <= 0.05))
+corr_pValues_Bonf <- p.adjust(final_mw$pValues_mw, "bonferroni")
+corr_pValues_BH <- p.adjust(final_mw$pValues_mw, "BH")
+final_mw_corr <- data.frame(final_mw, corr_pValues_Bonf, corr_pValues_BH)
 
-kable(final_mw_corr)
+before_corr <- nrow(final_mw[final_mw$pValues_mw <= 0.05,])
+after_Bonf <- nrow(final_mw[final_mw$corr_pValues_Bonf <= 0.05,])
+after_BH <- nrow(final_mw_corr[final_mw_corr$corr_pValues_BH <= 0.05,])
 
+diff_meth_probes <- data.frame(before_corr, after_Bonf, after_BH)
+rownames(diff_meth_probes) <- c("Differentially methylated probes")
+
+kable(diff_meth_probes)
+
+# png("boxplot_diff_meth_probes.png", width = 800, height = 600)
 par(mfrow=c(1,1))
-boxplot(final_mw_corr [,9:11], col = c("seashell2", "#C7FF38", "red"), names=NA) ###
+boxplot(final_mw_corr [,9:11], col = c("darkslategray1", "cornsilk", "deepskyblue"), names=NA) 
+legend("bottomright", legend=c("raw", "Bonferroni", "BH"),col=c("darkslategray1", "cornsilk", "deepskyblue"), lty=1:1, cex=0.8, xpd=TRUE, pch=15)
+dev.off()
 
 # 11
-WT_group <- final_mw_corr[,targets$Group=="WT"]
-WT_group_mean <- apply(WT_group, 1, mean)
-
-MUT_group <- final_mw_corr[,targets$Group=="MUT"]
-MUT_group_mean <- apply(MUT_group, 1, mean)
-
-delta <- WT_group_mean - MUT_group_mean
+WT_group <- final_mw_corr[, targets$Group == "WT"]
+MUT_group <- final_mw_corr[, targets$Group == "MUT"]
+mean_WT_group <- apply(WT_group, 1, mean)
+mean_MUT_group <- apply(MUT_group, 1, mean)
+delta <- mean_WT_group - mean_MUT_group
 
 toVolcPlot <- data.frame(delta, -log10(final_mw_corr$pValues_mw))
-
 kable(head(toVolcPlot))
 
 # png(filename = "VolcanoPlot.png", width = 800, height = 600)
@@ -283,14 +291,12 @@ par(mfrow=c(1,1))
 
 HighLight <- toVolcPlot[abs(toVolcPlot[,1])>0.1 & toVolcPlot[,2]>(-log10(0.05)),]
 plot(toVolcPlot[,1],toVolcPlot[,2], pch=19, cex=0.6 ,xlab="delta",ylab="-log10(Pvalue)", col="black")
-abline(a=-log10(0.05),b=0, col="#fb8b24")
+abline(a=-log10(0.05),b=0, col="#FB8B24")
 points(HighLight[,1], HighLight[,2], pch=17, cex=0.6, col="#CC00FF")
 
 dev.off()
 
-final_mw_corr_df <- data.frame(rownames(final_mw_corr), final_mw_corr)
-colnames(final_mw_corr_df)[1] <- "IlmnID"
-
+final_mw_corr_df <- data.frame(IlmnID = rownames(final_mw_corr), final_mw_corr)
 final_mw_corr_ann <- merge(final_mw_corr_df, Illumina450Manifest_clean, by = "IlmnID")
 
 input_Manhattan <- data.frame(id = final_mw_corr_ann$IlmnID, 
@@ -298,43 +304,50 @@ input_Manhattan <- data.frame(id = final_mw_corr_ann$IlmnID,
                               map = final_mw_corr_ann$MAPINFO, 
                               pval = final_mw_corr_ann$pValues_mw)
 
+input_Manhattan$chr <- as.character(input_Manhattan$chr)
+input_Manhattan$chr[input_Manhattan$chr == "X"] <- "23"
+input_Manhattan$chr[input_Manhattan$chr == "Y"] <- "24"
+input_Manhattan$chr <- as.numeric(input_Manhattan$chr)
+
+input_Manhattan <- input_Manhattan[is.finite(input_Manhattan$pval) & input_Manhattan$pval > 0 & input_Manhattan$pval <= 1, ]
+
 kable(head(input_Manhattan))
 
 # png(filename = "ManhattanPlot.png", width = 800, height = 600)
 par(mfrow=c(1,1))
-
 manhattan(input_Manhattan, snp = "id", chr = "chr", bp = "map", p = "pval", suggestiveline = -log10(0.05), col = rainbow(24), annotateTop = F)
 dev.off()
 
 # 12
-input_heatmap=as.matrix(final_mw[1:100,1:8])
+input_heatmap = as.matrix(final_mw[1:100, 1:8])
 
-wt <- targets[targets$Group=="WT", "Basename"]
+wt <- targets[targets$Group == "WT", "Basename"]
 wt <- sub("^[^_]+_", "", wt)
 group_color = c()
 i = 1
 
-for (name in colnames(beta)){
-  if (name %in% wt){group_color[i]="#0067E6"}
-  else{group_color[i]="#E50068"}
-  i = i+1
+for (name in colnames(beta)) {
+  if (name %in% wt) { group_color[i] = "#FF6600" }
+  else { group_color[i] = "#CC00CC" }
+  i = i + 1
 }
 
-# png(filename = "CompleteLinkage", width = 800, height = 600)
-# par(mfrow=c(1,1))
-heatmap.2(input_heatmap,col=viridis(100),Rowv=T,Colv=T,dendrogram="both",key=T,ColSideColors=group_color,density.info="none",trace="none",scale="none",symm=F,main="Complete linkage",key.xlab='beta-val',key.title=NA,keysize=1,labRow=NA)
-legend("topright", legend=levels(targets$Group),col=c('#E50068','#0067E6'),pch = 19,cex=0.7)
-dev.off()
+create_heatmap <- function(input_heatmap, group_color, targets, filename, main_title, linkage_method) {
+  png(filename = filename, width = 800, height = 600)
+  heatmap.2(
+    input_heatmap, col = plasma(100), Rowv = TRUE, Colv = TRUE,
+    hclustfun = function(x) hclust(x, method = linkage_method),
+    dendrogram = "both", key = TRUE, ColSideColors = group_color,
+    density.info = "none", trace = "none", scale = "none",
+    symm = FALSE, main = main_title,
+    key.xlab = 'beta-val', key.title = NA, keysize = 1, labRow = NA
+  )
+  legend("topright", legend = levels(targets$Group),
+         col = c('#CC00CC', '#FF6600'), pch = 19, cex = 0.7)
+  dev.off()
+}
 
-# png(filename = "SingleLinkage.png", width = 800, height = 600)
-# par(mfrow=c(1,1))
-heatmap.2(input_heatmap,col=viridis(100),Rowv=T,Colv=T,hclustfun = function(x) hclust(x,method = 'single'),dendrogram="both",key=T,ColSideColors=group_color,density.info="none",trace="none",scale="none",symm=F,main="Single linkage",key.xlab='beta-val',key.title=NA,keysize=1,labRow=NA)
-legend("topright", legend=levels(targets$Group),col=c('#FF6600','#CC00CC'),pch = 19,cex=0.7)
-dev.off()
-
-# png(filename = "AverageLinkage.png", width = 800, height = 600)
-# par(mfrow=c(1,1))
-heatmap.2(input_heatmap,col=viridis,Rowv=T,Colv=T,hclustfun = function(x) hclust(x,method = 'average'),dendrogram="both",key=T,ColSideColors=group_color
-          ,density.info="none",trace="none",scale="none",symm=F,main="Average linkage",key.xlab='beta-val',key.title=NA,keysize=1,labRow=NA)
-legend("topright", legend=levels(targets$Group),col=c('#E50068','#0067E6'),pch = 19,cex=0.7)
-dev.off()
+# note that the three .png files are going to be saved
+create_heatmap(input_heatmap, group_color, targets, "CompleteLinkage.png", "Complete linkage", "complete")
+create_heatmap(input_heatmap, group_color, targets, "SingleLinkage.png", "Single linkage", "single")
+create_heatmap(input_heatmap, group_color, targets, "AverageLinkage.png", "Average linkage", "average")
