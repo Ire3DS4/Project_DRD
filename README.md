@@ -55,7 +55,7 @@ RGset <- read.metharray.exp(targets = targets)
 
 ### 2. Create R/G Dataframes
 
-Separate the raw intensity data into red and green channels. This distinction helps in identifying the chemistry of the probes and is essential for analyzing the fluorescence signals accurately.
+Separate the raw intensity data into red and green channels. 
 
 ```r
 # Create R/G dataframes
