@@ -24,6 +24,9 @@ This repository offers a comprehensive, user-friendly pipeline for processing, a
 *Visualization:* Create informative plots to visualize DNA methylation patterns and results.
 
 ## Data Preparation
+### 0. Libraries
+The minfi package in R is used for analyzing methylation data from Infinium methylation arrays. It handles raw data, quality control, preprocessing, and downstream analyses. The RGChannelSet object stores raw signal intensities from the red and green channels, which is crucial for assessing DNA methylation levels across the genome.
+All the other libraries serve specific purposes in data analysis, visualization, and genomic research.
 
 ### 1. Load Raw Data
 
@@ -109,7 +112,7 @@ Notice that the assigned probes are of Infinium II design, hence no color channe
 
 ### 4. Create the Object MSet.raw
 
-The `MSet.raw` object contains methylated and unmethylated signal intensities, facilitating further analysis of methylation levels.
+The `MSet.raw` object contains methylated and unmethylated signal intensities, facilitating further analysis of methylation levels. 
 
 ```r
 # Create MSet.raw object
@@ -141,6 +144,7 @@ Negative control probes estimate system background intensity. Normally, these va
 controlStripPlot(RGset, controls="NEGATIVE")
 ```
 ![Control strip plot](plots/controlStripPlot_NEGATIVE.png)
+Intensity values below 1000 units (log2(1000) = 10) indicate low background noise and reliable signals.
 
 ##### 5.3 Failed positions
 ```r
@@ -162,6 +166,8 @@ rownames(failed_positions_summary) <- NULL
 kable(failed_positions_summary)
 ```
 
+Most of these samples have very low percentages of failed probes, indicating high data quality.
+
 ```r
 |Sample | n_Failed_positions| percentage_failed|
 |:------|------------------:|-----------------:|
@@ -177,7 +183,19 @@ kable(failed_positions_summary)
 
 ### 6. Beta and M Values
 
-Beta values represent the proportion of methylation at each CpG site, while M values are logit-transformed beta values.
+Methylation levels are continuous values between 0 and 1, obtained from fluorescence intensities. These levels can be represented as:
+
+- **Beta Values (β-values):** Represent the proportion of methylation at a CpG site (0 to 1). 
+    - β-values are intuitive but can be heteroscedastic.
+    - Formula: \(\beta = \frac{M}{M + U}\)
+
+- **M Values (M-values):** Log-transformed ratios of methylated to unmethylated intensities.
+    - M-values can take any value on the real line.
+    - Formula: \(M = \log_2\frac{M}{U}\)
+
+From these formulas, the conversion between Beta and M values can be derived as:
+\[ \beta_i = \frac{2^{M_i}}{2^{M_i} + 1} \]
+\[ M_i = \log_2\left(\frac{\beta_i}{1 - \beta_i}\right) \]
 
 ```r
 # Calculate Beta and M values
