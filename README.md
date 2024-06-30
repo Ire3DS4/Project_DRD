@@ -427,21 +427,24 @@ create_heatmap <- function(input_heatmap, group_color, targets, filename, main_t
 ##### 12.1 Complete Linkage
 
 Complete Linkage focuses on maximizing distance within clusters, leading to tight clusters.
+
 ![Complete Linkage](plots/CompleteLinkage.png)
 
 ##### 12.2 Single Linkage
 
-![Single Linkage](plots/SingleLinkage.png)
 Single Linkage focuses on minimizing distance, potentially leading to elongated clusters.
+
+![Single Linkage](plots/SingleLinkage.png)
 
 ##### 12.3 Average Linkage
 
+Single Linkage focuses on minimizing distance, potentially leading to elongated clusters.
+
 ![Average Linkage](plots/AverageLinkage.png)
-Average Linkage balances the two, averaging all pairwise distances, leading to moderate cluster shapes.
 
 ## Conclusions
 
-This project provides a comprehensive analysis of Infinium methylation data, including preprocessing, normalization, visualization, and statistical analysis. The key steps are loading data, defining sample groups, normalizing data, creating informative plots, and performing differential methylation analysis. The analysis reveals differences in methylation patterns between WT and MUT groups, which can be further explored for biological insights.
+This project provides a comprehensive analysis of Infinium methylation data, including preprocessing, normalization, visualization, and statistical analysis. The analysis reveals differences in methylation patterns between WT and MUT groups, which could be further explored for biological insights.
 
 ### Additional Resources
 - [minfi package documentation](https://bioconductor.org/packages/release/bioc/html/minfi.html)
