@@ -14,7 +14,6 @@ library(ggplot2)
 library(viridis)
 ```
 
-
 *Step 1:* Load the raw data using the minfi package and create an object called RGset that stores the RGChannelSet object.
 
 ```{r}
@@ -26,7 +25,6 @@ targets <- read.metharray.sheet(baseDir)
 load("RGset.RData")
 samplesheet <- read.csv("Input/Samplesheet_report_2024.csv",header=T, stringsAsFactors=T)
 ```
-
 
 This step involves importing the raw methylation data from the Illumina array. The RGset object contains the red and green fluorescence intensities, which are needed for subsequent data processing and normalization.
 
@@ -40,7 +38,6 @@ Green <- getGreen(RGset)
 print(dim(Red))      
 print(dim(Green))    
 ```
-
 
 This step extracts the red and green channel intensities from the RGset object. These intensities represent the hybridization signals from the methylated and unmethylated probes, respectively.
 
@@ -70,7 +67,6 @@ rownames(fluorescence_data) <- NULL
 kable(fluorescence_data)
 ```
 
-
 This step involves querying specific probe addresses to understand their fluorescence values. Type I probes have both red and green fluorescence, whereas Type II probes only have green. This information helps in understanding the hybridization patterns and probe types.
 
 *Step 4:* Create the MSet.raw object using the minfi package.
@@ -81,7 +77,6 @@ This step involves querying specific probe addresses to understand their fluores
 # save(MSet.raw,file='MSet_raw.RData')
 load("MSet_raw.RData")
 ```
-
 
 The MSet.raw object contains the methylation and unmethylation signal intensities. This object is needed for quality control and subsequent analysis steps.
 
@@ -98,7 +93,6 @@ plotQC(qc)
 dev.off()
 ```
 
-
 Checking the intensity of negative controls ensures that there is no significant background signal, which could affect the accuracy of the methylation measurements.
 
 ```{r}
@@ -107,7 +101,6 @@ Checking the intensity of negative controls ensures that there is no significant
 controlStripPlot(RGset, controls = 'NEGATIVE')
 dev.off()
 ```
-
 
 Detection p-values assess the reliability of each probe's measurement. Probes with p-values above a threshold are considered unreliable and may be filtered out.
 
@@ -132,7 +125,6 @@ rownames(failed_positions_summary) <- NULL
 
 kable(failed_positions_summary)
 ```
-
 
 *Step 6*: Calculate raw beta and M values and plot the density distributions for WT and MUT groups.
 
@@ -169,7 +161,6 @@ legend("topright", legend = c("WT", "MUT"), col = c("#FF9900", "#9966FF"), lwd =
 
 dev.off()
 ```
-
 
 Beta values represent the ratio of methylated signal to the total signal, while M values are logit-transformed beta values. Comparing the density plots of these values for WT and MUT groups can reveal differences in methylation patterns between the two groups.
 
@@ -261,7 +252,6 @@ par(mfrow = c(1, 1))
 dev.off()
 ```
 
-
 Normalization corrects for technical variations and ensures that methylation measurements are comparable across samples. Comparing density plots and boxplots before and after normalization can show the effectiveness of the normalization process and,  ideally, normalization reduces variability and makes the distributions of beta values more uniform across samples and groups.
 
 *Step 8:* Perform PCA on the normalized beta values and plot the results.
@@ -293,7 +283,6 @@ legend("bottomright", legend=levels(samplesheet$Sex),  col = c(1:nlevels(samples
 dev.off()
 ```
 
-
 ```{r}
 var_explained <- pca_results$sdev^2 / sum(pca_results$sdev^2) * 100
 
@@ -310,7 +299,6 @@ ggplot(eig_df, aes(x = PC, y = Variance)) +
 
 # ggsave("PCA_variance.png", width = 8, height = 6)
 ```
-
 
 PCA reduces the dimensionality of the data and helps visualize the overall structure. It can reveal whether samples cluster by group (WT vs. MUT), sex, or batch effects
 
@@ -334,7 +322,6 @@ load("final_mw.RData")
 kable(head(final_mw))
 ```
 
-
 ```{r}
 # png(filename = "pvalue_distribution.png", width = 800, height = 600)
 
@@ -343,7 +330,6 @@ abline(v = 0.05, col = "#EF233C", lwd = 2)
 
 dev.off()
 ```
-
 
 Statistical tests, and in this case the Mann-Whitney test, identify probes with significant differences in methylation levels between groups. The number of differentially methylated probes indicates the extent of methylation changes between groups.
 
@@ -370,7 +356,6 @@ boxplot(final_mw_corr [,9:11], col = c("darkslategray1", "cornsilk", "deepskyblu
 legend("bottomright", legend=c("raw", "Bonferroni", "BH"),col=c("darkslategray1", "cornsilk", "deepskyblue"), lty=1:1, cex=0.8, xpd=TRUE, pch=15)
 dev.off()
 ```
-
 
 Multiple testing corrections adjust for the large number of comparisons, reducing the likelihood of false positives. Bonferroni is more stringent, while BH is less conservative.
 The corrected p-values show how many probes remain significant after adjusting for multiple tests.
@@ -401,7 +386,6 @@ points(HighLight[,1], HighLight[,2], pch=17, cex=0.6, col="#CC00FF")
 dev.off()
 ```
 
-
 The Manhattan plot shows the distribution of p-values across the genome. Each point represents a probe, with the x-axis showing its genomic position and the y-axis its -log10(p-value).
 
 ```{r}
@@ -428,7 +412,6 @@ par(mfrow=c(1,1))
 manhattan(input_Manhattan, snp = "id", chr = "chr", bp = "map", p = "pval", suggestiveline = -log10(0.05), col = rainbow(24), annotateTop = F)
 dev.off()
 ```
-
 
 *Step 12:* Create a heatmap of the top 100 differentially methylated probes: heatmaps visualize the methylation levels of significant probes across samples and clustering in the heatmap can reveal patterns and groupings.
 Distinct clusters in the heatmap indicate consistent methylation differences between WT and MUT samples.
