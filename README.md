@@ -324,12 +324,13 @@ rownames(diff_meth_probes) <- c("Differentially methylated probes")
 
 kable(diff_meth_probes)
 ```
-There were 53343 probes identified as differentially methylated. However, after correcting for multiple testing using both Bonferroni and BH methods, none of these probes remained statistically significant. This outcome suggests that the initial findings of differential methylation were likely due to chance or false positives.
 ```r
 |                                 | before_corr| after_Bonf| after_BH|
 |:--------------------------------|-----------:|----------:|--------:|
 |Differentially methylated probes |       53343|          0|        0|
 ```
+As shown in the table, there were 53343 probes identified as differentially methylated. However, after correcting for multiple testing using both Bonferroni and BH methods, none of these probes remained statistically significant. This outcome suggests that the initial findings of differential methylation were likely due to chance or false positives.
+
 ![Boxplot of differently methylated probes](plots/boxplot_diff_meth_probes.png)
 
 ### 11. Volcano and Manhattan Plots
