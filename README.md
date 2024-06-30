@@ -299,7 +299,8 @@ kable(head(final_mw))
 ```
 ![p-value distribution variance](plots/pvalue_distribution.png)
 
-SWAN (Subset-quantile Within Array Normalization) is a non-parametric normalization method. It does not assume a specific distribution of the data but instead adjusts for technical biases by aligning subsets of the data (quantiles) within each array. These values are discrete because they represent the probability of observing the data under the null hypothesis, computed at specific points and not as a continuous distribution.
+SWAN (Subset-quantile Within Array Normalization) is a non-parametric normalization method. It does not assume a specific distribution of the data but instead adjusts for technical biases by aligning subsets of the data (quantiles) within each array. These values are discrete because they represent the probability of observing the data under the null hypothesis, computed at specific points and not as a continuous distribution. 
+To avoid these sparse p-values we could either get more data or switch to a parametric test.
 
 ### 10. Multiple Test Correction
 
