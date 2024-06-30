@@ -82,20 +82,20 @@ rownames(failed_positions_summary) <- NULL
 kable(failed_positions_summary)
 
 # 6
-beta_values <- getBeta(MSet.raw)
-M_values <- getM(MSet.raw)
+beta <- getBeta(MSet.raw)
+M <- getM(MSet.raw)
 
 wt_indices <- which(samplesheet$Group == "WT")
 mut_indices <- which(samplesheet$Group == "MUT")
 
-mean_beta_wt <- rowMeans(beta_values[, wt_indices], na.rm = TRUE)
-mean_beta_mut <- rowMeans(beta_values[, mut_indices], na.rm = TRUE)
+beta_wt <- rowMeans(beta[, wt_indices], na.rm = TRUE)
+beta_mut <- rowMeans(beta[, mut_indices], na.rm = TRUE)
 
-mean_beta_wt <- mean_beta_wt[!is.na(mean_beta_wt)]
-mean_beta_mut <- mean_beta_mut[!is.na(mean_beta_mut)]
+beta_wt <- beta_wt[!is.na(beta_wt)]
+beta_mut <- beta_mut[!is.na(beta_mut)]
 
-M_values_wt <- as.vector(M_values[, wt_indices])
-M_values_mut <- as.vector(M_values[, mut_indices])
+M_values_wt <- as.vector(M[, wt_indices])
+M_values_mut <- as.vector(M[, mut_indices])
 
 M_values_wt <- M_values_wt[!is.na(M_values_wt)]
 M_values_mut <- M_values_mut[!is.na(M_values_mut)]
@@ -103,8 +103,8 @@ M_values_mut <- M_values_mut[!is.na(M_values_mut)]
 # png("BetaMvalues.png", width = 1200, height = 800)
 par(mfrow = c(1, 2))
 
-plot(density(mean_beta_wt), main = "Beta Values", col = "#FF9900")
-lines(density(mean_beta_mut), col = "#9966FF")
+plot(density(beta_wt), main = "Beta Values", col = "#FF9900")
+lines(density(beta_mut), col = "#9966FF")
 legend("topright", legend = c("WT", "MUT"), col = c("#FF9900", "#9966FF"), lwd = 3, cex = 0.8)
 
 plot(density(M_values_wt), xlim = c(-8, 8), ylim = c(0, 0.2), main = "M Values", col = "#FF9900")
@@ -117,7 +117,6 @@ dev.off()
 dfI <- Illumina450Manifest_clean %>% filter(Infinium_Design_Type == "I") %>% droplevels()
 dfII <- Illumina450Manifest_clean %>% filter(Infinium_Design_Type == "II") %>% droplevels()
 
-beta <- getBeta(MSet.raw)
 beta_I <- beta[rownames(beta) %in% dfI$IlmnID, ]
 beta_II <- beta[rownames(beta) %in% dfII$IlmnID, ]
 
