@@ -147,6 +147,7 @@ Negative control probes estimate system background intensity. Normally, these va
 controlStripPlot(RGset, controls="NEGATIVE")
 ```
 ![Control strip plot](plots/controlStripPlot_NEGATIVE.png)
+
 These intensity values are all below 1000 units (log2(1000) = 10), indicating low background noise and reliable signals.
 
 ##### 5.3 Failed positions
@@ -208,6 +209,7 @@ beta <- getBeta(MSet.raw)
 M <- getM(MSet.raw)
 ```
 ![Beta and M plots](plots/BetaMvalues.png)
+
 Both WT and MUT groups show similar distribution patterns in Beta and M values, indicating bimodal distributions (peaks around 0.1 and 0.9 for Beta values). The similarity in distributions suggests no significant overall differences in methylation levels between WT and MUT groups, however, the central values in the WT group are slightly lower and the peaks values are slightly higher.
 
 ### 7. Functional Normalization
@@ -233,6 +235,7 @@ dfI <- Illumina450Manifest_clean %>% filter(Infinium_Design_Type == "I") %>% dro
 dfII <- Illumina450Manifest_clean %>% filter(Infinium_Design_Type == "II") %>% droplevels()
 ```
 ![Density plots](plots/density_plots.png)
+
 Functional Normalization led to noticeable changes: initially, the mean density of the raw data highlighted distinct differences between the two probe types, whereas post-normalization, these differences diminished, resulting in more overlap. Examining the boxplot, the raw data exhibited greater variability compared to the normalized data. Furthermore, after normalization, the median and first quartile (Q1) values shifted towards lower values.
 
 ### 8. PCA
@@ -245,6 +248,7 @@ Clustering of samples indicates similarity, while separation between groups (e.g
 pca_results <- prcomp(t(beta_SWAN), scale. = TRUE)
 ```
 ![PCA](plots/PCA.png)
+
 The groups primarily segregate based on PC1, where most of the wild types (WTs) have lower PC1 values compared to mutants (MUTs), which predominantly occupy the higher PC1 range. While WTs form a cohesive cluster, MUTs show varying PC2 values, except for R02C02 and R03C02, which cluster closely together. Notice that R02C01, despite being a MUT, clusters with the WTs. This analysis also reveals a clear separation by sex on the graph. Males cluster tightly together across PC1 and PC2, whereas females exhibit three distinct clusters.
 
 ```r
@@ -256,6 +260,7 @@ eig_df <- data.frame(
 )
 ```
 ![PCA variance](plots/PCA_variance.png)
+
 Notice that the first two PCs explain the 53.1% of the variance.
 
 ## Visualization and Analysis
@@ -293,6 +298,7 @@ kable(head(final_mw))
 |cg07939587 | 0.9095799| 0.8335510| 0.9359694| 0.9051271| 0.9045411| 0.7254902| 0.9313836| 0.5163043|  0.0285714|
 ```
 ![p-value distribution variance](plots/pvalue_distribution.png)
+
 SWAN (Subset-quantile Within Array Normalization) is a non-parametric normalization method. It does not assume a specific distribution of the data but instead adjusts for technical biases by aligning subsets of the data (quantiles) within each array. These values are discrete because they represent the probability of observing the data under the null hypothesis, computed at specific points and not as a continuous distribution.
 
 ### 10. Multiple Test Correction
@@ -393,6 +399,7 @@ kable(head(input_Manhattan))
 |cg00000289 |  14|  69341139| 0.4857143|
 ```
 ![Manhattan Plot](plots/ManhattanPlot.png)
+
 Notice that both the Volcano plot and the Manhattan plot exhibit "stratified" data due to the use of a non-parametric test.
 
 ### 12. Heatmap
@@ -420,11 +427,19 @@ create_heatmap <- function(input_heatmap, group_color, targets, filename, main_t
 }
 ```
 ##### 12.1 Complete Linkage
+
+Complete Linkage focuses on maximizing distance within clusters, leading to tight clusters.
 ![Complete Linkage](plots/CompleteLinkage.png)
+
 ##### 12.2 Single Linkage
+
 ![Single Linkage](plots/SingleLinkage.png)
+Single Linkage focuses on minimizing distance, potentially leading to elongated clusters.
+
 ##### 12.3 Average Linkage
+
 ![Average Linkage](plots/AverageLinkage.png)
+Average Linkage balances the two, averaging all pairwise distances, leading to moderate cluster shapes.
 
 ## Conclusions
 
