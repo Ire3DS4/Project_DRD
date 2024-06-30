@@ -153,23 +153,26 @@ failed_positions <- colSums(failed)
 # Summarize failed positions per sample
 failed_positions_summary <- data.frame(
   Sample = colnames(failed),
-  n_Failed_positions = failed_positions
+  n_Failed_positions = colSums(failed),
+  percentage_failed = colMeans(failed)*100
 )
 failed_positions_summary$Sample <- sapply(strsplit(rownames(failed_positions_summary), "_"), `[`, 2)
 rownames(failed_positions_summary) <- NULL
+
+kable(failed_positions_summary)
 ```
 
 ```r
-|Sample | n_Failed_positions|
-|:------|------------------:|
-|R01C01 |                 45|
-|R02C01 |                 26|
-|R03C01 |                 28|
-|R04C01 |                 32|
-|R02C02 |                190|
-|R03C02 |                130|
-|R04C02 |                 17|
-|R05C02 |                406|
+|Sample | n_Failed_positions| percentage_failed|
+|:------|------------------:|-----------------:|
+|R01C01 |                 45|         0.0092686|
+|R02C01 |                 26|         0.0053552|
+|R03C01 |                 28|         0.0057671|
+|R04C01 |                 32|         0.0065910|
+|R02C02 |                190|         0.0391339|
+|R03C02 |                130|         0.0267759|
+|R04C02 |                 17|         0.0035015|
+|R05C02 |                406|         0.0836231|
 ```
 
 ### 6. Beta and M Values
@@ -188,70 +191,15 @@ M <- getM(MSet.raw)
 Normalization adjusts for technical variation between samples.
 
 ```r
-# Perform functional normalization
-norm_result <- preprocessNoob(RGset)
-beta_norm <- getBeta(norm_result)
+# Apply SWAN normalization
+RGSet_SWAN <- preprocessSWAN(RGset)
+beta_SWAN <- getBeta(RGSet_SWAN)
 ```
 
 ```r
 # Filter Infinium I and II data
 dfI <- Illumina450Manifest_clean %>% filter(Infinium_Design_Type == "I") %>% droplevels()
 dfII <- Illumina450Manifest_clean %>% filter(Infinium_Design_Type == "II") %>% droplevels()
-
-# Get beta values for Infinium I and II
-beta <- getBeta(MSet.raw)
-beta_I <- beta[rownames(beta) %in% dfI$IlmnID, ]
-beta_II <- beta[rownames(beta) %in% dfII$IlmnID, ]
-
-# Remove rows with all NAs
-beta_I <- beta_I[rowSums(is.na(beta_I)) != ncol(beta_I), ]
-beta_II <- beta_II[rowSums(is.na(beta_II)) != ncol(beta_II), ]
-
-# Calculate densities for raw means and sds
-mean_beta_I <- rowMeans(beta_I, na.rm = TRUE)
-mean_beta_I <- na.omit(mean_beta_I)
-density_mean_beta_I <- density(mean_beta_I)
-
-mean_beta_II <- rowMeans(beta_II, na.rm = TRUE)
-mean_beta_II <- na.omit(mean_beta_II)
-density_mean_beta_II <- density(mean_beta_II)
-
-sd_beta_I <- apply(beta_I, 1, sd, na.rm = TRUE)
-sd_beta_I <- na.omit(sd_beta_I)
-density_sd_of_beta_I <- density(sd_beta_I)
-
-sd_beta_II <- apply(beta_II, 1, sd, na.rm = TRUE)
-sd_beta_II <- na.omit(sd_beta_II)
-density_sd_of_beta_II <- density(sd_beta_II)
-
-# Apply SWAN normalization
-RGSet_SWAN <- preprocessSWAN(RGset)
-
-# Get beta values for Infinium I and II after SWAN normalization
-beta_SWAN <- getBeta(RGSet_SWAN)
-beta_I_SWAN <- beta_SWAN[rownames(beta_SWAN) %in% dfI$IlmnID, ]
-beta_II_SWAN <- beta_SWAN[rownames(beta_SWAN) %in% dfII$IlmnID, ]
-
-# Remove rows with all NAs
-beta_I_SWAN <- beta_I_SWAN[rowSums(is.na(beta_I_SWAN)) != ncol(beta_I_SWAN), ]
-beta_II_SWAN <- beta_II_SWAN[rowSums(is.na(beta_II_SWAN)) != ncol(beta_II_SWAN), ]
-
-# Calculate densities for SWAN means and sds
-mean_beta_I_SWAN <- rowMeans(beta_I_SWAN, na.rm = TRUE)
-mean_beta_I_SWAN <- na.omit(mean_beta_I_SWAN)
-density_mean_beta_I_SWAN <- density(mean_beta_I_SWAN)
-
-mean_beta_II_SWAN <- rowMeans(beta_II_SWAN, na.rm = TRUE)
-mean_beta_II_SWAN <- na.omit(mean_beta_II_SWAN)
-density_mean_beta_II_SWAN <- density(mean_beta_II_SWAN)
-
-sd_beta_I_SWAN <- apply(beta_I_SWAN, 1, sd, na.rm = TRUE)
-sd_beta_I_SWAN <- na.omit(sd_beta_I_SWAN)
-density_sd_of_beta_I_SWAN <- density(sd_beta_I_SWAN)
-
-sd_beta_II_SWAN <- apply(beta_II_SWAN, 1, sd, na.rm = TRUE)
-sd_beta_II_SWAN <- na.omit(sd_beta_II_SWAN)
-density_sd_of_beta_II_SWAN <- density(sd_beta_II_SWAN)
 ```
 ![Density plots](plots/density_plots.png)
 
@@ -261,30 +209,19 @@ Principal Component Analysis (PCA) reduces data dimensionality and helps visuali
 
 ```r
 # Perform PCA
-par(mfrow = c(1, 2))
-
-# Define the palette for the first plot
-palette(c("#FF0000", "#9966FF"))
-
-# Plot the first PCA plot
-plot(pca_results$x[, 1], pca_results$x[, 2], cex = 2, pch = 2, col = targets$Group,
-     xlab = "PC1", ylab = "PC2", xlim = c(-1000, 1000), ylim = c(-1000, 1000))
-text(pca_results$x[, 1], pca_results$x[, 2], labels = rownames(pca_results$x), cex = 0.5, pos = 1)
-legend("bottomright", legend = levels(targets$Group), col = 1:nlevels(targets$Group), pch = 2)
-
-# Define the palette for the second plot
-palette(c("#FF9999","#0066CC"))
-
-# Set shapes for sexes
-gender <- c("M" =-0x2640L, "F" = -0x2642L)
-
-# Plot the second PCA plot
-plot(pca_results$x[, 1], pca_results$x[, 2], cex = 1.5, pch = gender[samplesheet$Sex], col = samplesheet$Sex,
-     xlab = "PC1", ylab = "PC2", xlim = c(-1000, 1000), ylim = c(-1000, 1000))
-text(pca_results$x[, 1], pca_results$x[, 2], labels = rownames(pca_results$x), cex = 0.5, pos = 1)
-legend("bottomright", legend=levels(samplesheet$Sex),  col = c(1:nlevels(samplesheet$Sex)), pch = gender)
+pca_results <- prcomp(t(beta_SWAN), scale. = TRUE)
 ```
 ![PCA](plots/PCA.png)
+
+```r
+var_explained <- pca_results$sdev^2 / sum(pca_results$sdev^2) * 100
+
+eig_df <- data.frame(
+  PC = seq_along(var_explained),
+  Variance = var_explained
+)
+```
+![PCA variance](plots/PCA_variance.png)
 
 ## Visualization and Analysis
 
@@ -312,13 +249,14 @@ kable(head(final_mw))
 ```r
 |           |    R01C01|    R02C01|    R03C01|    R04C01|    R02C02|    R03C02|    R04C02|    R05C02| pValues_mw|
 |:----------|---------:|---------:|---------:|---------:|---------:|---------:|---------:|---------:|----------:|
-|cg00213748 | 0.2800583| 0.3392271| 0.2065237| 0.2220701| 0.4043062| 0.5243037| 0.1556169| 0.5729493|  0.0285714|
-|cg03695421 | 0.6014599| 0.5250000| 0.5522746| 0.6032083| 0.3615561| 0.3838308| 0.5667055| 0.4803304|  0.0285714|
-|cg03750315 | 0.0373791| 0.0835118| 0.0783275| 0.0479203| 0.4081164| 0.5822222| 0.0828804| 0.6153310|  0.0285714|
-|cg04462340 | 0.5786193| 0.6238414| 0.6119760| 0.5876453| 0.6516410| 0.7722205| 0.5696010| 0.7369912|  0.0285714|
-|cg05865243 | 0.9346293| 0.8883589| 0.9297575| 0.9287217| 0.8526497| 0.7607313| 0.9129813| 0.4261603|  0.0285714|
-|cg07939587 | 0.9090038| 0.8314741| 0.9360740| 0.9045395| 0.8650881| 0.7309030| 0.9311156| 0.5170557|  0.0285714|
+|cg00213748 | 0.2817402| 0.3407055| 0.2067676| 0.2236526| 0.4028662| 0.5231608| 0.1565621| 0.5665209|  0.0285714|
+|cg03695421 | 0.6034216| 0.5274061| 0.5557625| 0.6064900| 0.3585165| 0.3829868| 0.5724094| 0.4791914|  0.0285714|
+|cg03750315 | 0.0376477| 0.0840457| 0.0790058| 0.0486865| 0.4055088| 0.5794807| 0.0835519| 0.6151685|  0.0285714|
+|cg04462340 | 0.5819596| 0.6274705| 0.6153685| 0.5920996| 0.6508689| 0.7705017| 0.5705601| 0.7360328|  0.0285714|
+|cg05865243 | 0.9349324| 0.8893957| 0.9298641| 0.9289065| 0.8537726| 0.7612493| 0.9139275| 0.4217573|  0.0285714|
+|cg07939587 | 0.9095799| 0.8335510| 0.9359694| 0.9051271| 0.9045411| 0.7254902| 0.9313836| 0.5163043|  0.0285714|
 ```
+![p-value distribution variance](plots/pvalue_distribution.png)
 
 ### 10. Multiple Test Correction
 
@@ -326,10 +264,18 @@ Adjust p-values for multiple testing to control the false discovery rate (FDR).
 
 ```r
 # Multiple test correction
-corrected_pValues_Bonf <- p.adjust(final_mw$pValues_mw,"bonferroni")
-corrected_pValues_BH <- p.adjust(final_mw$pValues_mw,"BH")
-final_mw_corr <- data.frame(sum(final_mw <= 0.05), sum(corrected_pValues_Bonf <= 0.05), sum(corrected_pValues_BH <= 0.05))
-kable(final_mw_corr)
+corr_pValues_Bonf <- p.adjust(final_mw$pValues_mw, "bonferroni")
+corr_pValues_BH <- p.adjust(final_mw$pValues_mw, "BH")
+final_mw_corr <- data.frame(final_mw, corr_pValues_Bonf, corr_pValues_BH)
+
+before_corr <- nrow(final_mw[final_mw$pValues_mw <= 0.05,])
+after_Bonf <- nrow(final_mw[final_mw$corr_pValues_Bonf <= 0.05,])
+after_BH <- nrow(final_mw_corr[final_mw_corr$corr_pValues_BH <= 0.05,])
+
+diff_meth_probes <- data.frame(before_corr, after_Bonf, after_BH)
+rownames(diff_meth_probes) <- c("Differentially methylated probes")
+
+kable(diff_meth_probes)
 ```
 
 ```r
@@ -337,22 +283,22 @@ kable(final_mw_corr)
 |:--------------------------------|-----------:|----------:|--------:|
 |Differentially methylated probes |       53343|          0|        0|
 ```
+![Boxplot of differently methylated probes](plots/boxplot_diff_meth_probes.png)
 
 ### 11. Volcano and Manhattan Plots
 
 Visualize DMPs with volcano and Manhattan plots.
 
+##### 11.1 Volcano plot
 ```r
-# WT group mean
-WT_group <- final_mw_corr[,targets$Group=="WT"]
-WT_group_mean <- apply(WT_group, 1, mean)
-
-# MUT group mean
-MUT_group <- final_mw_corr[,targets$Group=="MUT"]
-MUT_group_mean <- apply(MUT_group, 1, mean)
+# WT and MUT group means
+WT_group <- final_mw_corr[, targets$Group == "WT"]
+MUT_group <- final_mw_corr[, targets$Group == "MUT"]
+mean_WT_group <- apply(WT_group, 1, mean)
+mean_MUT_group <- apply(MUT_group, 1, mean)
 
 # Compute delta
-delta <- WT_group_mean - MUT_group_mean
+delta <- mean_WT_group - mean_MUT_group
 
 #create a dataframe
 toVolcPlot <- data.frame(delta, -log10(final_mw_corr$pValues_mw))
@@ -362,25 +308,68 @@ kable(head(toVolcPlot))
 ```r
 |           |      delta| X.log10.final_mw_corr.pValues_mw.|
 |:----------|----------:|---------------------------------:|
-|cg00213748 | -0.1046692|                          1.544068|
-|cg03695421 |  0.1565745|                          1.544068|
-|cg03750315 | -0.1773085|                          1.544068|
-|cg04462340 | -0.0461887|                          1.544068|
-|cg05865243 |  0.1515448|                          1.544068|
-|cg07939587 |  0.1439945|                          1.544068|
+|cg00213748 | -0.3737603|                          1.544068|
+|cg03695421 | -0.1118362|                          1.544068|
+|cg03750315 | -0.4472554|                          1.544068|
+|cg04462340 | -0.3155401|                          1.544068|
+|cg05865243 | -0.1191932|                          1.544068|
+|cg07939587 | -0.1341973|                          1.544068|
 ```
 ![Volcano Plot](plots/VolcanoPlot.png)
+
+##### 11.2 Manhattan Plot
+```r
+final_mw_corr_df <- data.frame(IlmnID = rownames(final_mw_corr), final_mw_corr)
+final_mw_corr_ann <- merge(final_mw_corr_df, Illumina450Manifest_clean, by = "IlmnID")
+
+input_Manhattan <- data.frame(id = final_mw_corr_ann$IlmnID, 
+                              chr = final_mw_corr_ann$CHR, 
+                              map = final_mw_corr_ann$MAPINFO, 
+                              pval = final_mw_corr_ann$pValues_mw)
+kable(head(input_Manhattan))
+```
+```r
+|id         | chr|       map|      pval|
+|:----------|---:|---------:|---------:|
+|cg00000029 |  16|  53468112| 0.0285714|
+|cg00000108 |   3|  37459206| 0.1142857|
+|cg00000109 |   3| 171916037| 0.1142857|
+|cg00000165 |   1|  91194674| 0.3428571|
+|cg00000236 |   8|  42263294| 0.8857143|
+|cg00000289 |  14|  69341139| 0.4857143|
+```
+![Manhattan Plot](plots/ManhattanPlot.png)
 
 ### 12. Heatmap
 
 Heatmaps visualize methylation patterns across samples.
 
 ```r
-# Heatmap
-library(pheatmap)
-significant_dmp <- dmp[dmp$adj.P.Val < 0.05, ]
-pheatmap(beta_norm[rownames(significant_dmp), ])
+# Matrix creation
+input_heatmap = as.matrix(final_mw[1:100, 1:8])
+
+# Heatmap function
+create_heatmap <- function(input_heatmap, group_color, targets, filename, main_title, linkage_method) {
+  png(filename = filename, width = 800, height = 600)
+  heatmap.2(
+    input_heatmap, col = plasma(100), Rowv = TRUE, Colv = TRUE,
+    hclustfun = function(x) hclust(x, method = linkage_method),
+    dendrogram = "both", key = TRUE, ColSideColors = group_color,
+    density.info = "none", trace = "none", scale = "none",
+    symm = FALSE, main = main_title,
+    key.xlab = 'beta-val', key.title = NA, keysize = 1, labRow = NA
+  )
+  legend("topright", legend = levels(targets$Group),
+         col = c('#CC00CC', '#FF6600'), pch = 19, cex = 0.7)
+  dev.off()
+}
 ```
+##### 12.1 Complete Linkage
+![Complete Linkage](plots/CompleteLinkage.png)
+##### 12.2 Single Linkage
+![Single Linkage](plots/SingleLinkage.png)
+##### 12.3 Average Linkage
+![Average Linkage](plots/AverageLinkage.png)
 
 ## Conclusions
 
