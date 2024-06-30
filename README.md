@@ -2,7 +2,7 @@
 
 This project, conducted for the exam of DNA/RNA Dynamics, focuses on analyzing Infinium methylation data using R.
 
-Note: The README file includes code snippets, result interpretations, and various plots. For complete code details, please refer to the 'R code' section.
+Note: The README file includes code snippets, result interpretations, and various plots. For complete code details, please refer to `code.R`.
 
 ## Table of Contents
 1. [Introduction](#introduction)
