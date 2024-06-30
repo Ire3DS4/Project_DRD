@@ -2,7 +2,7 @@
 
 This project for the exam of DNA/RNA Dynamics focuses on analyzing Infinium methylation data using R.
 
-P.S: in the README file there are going to be code snippets as well as interpretations of the results and various plots; for the complete code please look at 'R code'.
+P.S: in the README file there are going to be code snippets as well as interpretations of the results and various plots; for the complete code please refer at 'R code'.
 
 ## Table of Contents
 1. [Introduction](#introduction)
@@ -18,10 +18,10 @@ The following pipeline is designed to analyze DNA methylation data from the Illu
 This repository offers a comprehensive, user-friendly pipeline for processing, analyzing, and interpreting methylation data from the Infinium platform.
 
 ### Workflow Overview
-Quality Control: Assess data quality to identify potential issues or biases.
-Preprocessing: Apply normalization techniques to reduce technical variations and batch effects.
-Differential Methylation Analysis: Identify differentially methylated regions (DMRs) or CpG sites associated with specific conditions or phenotypes.
-Visualization: Create informative plots to visualize DNA methylation patterns and results.
+*Quality Control:* Assess data quality to identify potential issues or biases.
+*Preprocessing:* Apply normalization techniques to reduce technical variations and batch effects.
+*Differential Methylation Analysis:* Identify differentially methylated regions (DMRs) or CpG sites associated with specific conditions or phenotypes.
+*Visualization:* Create informative plots to visualize DNA methylation patterns and results.
 
 ## Data Preparation
 
@@ -32,10 +32,15 @@ Begin by loading the raw data files, which contain intensity values for both met
 ```r
 # Load necessary libraries
 library(minfi)
-library(knitr)
 library(IlluminaHumanMethylation450kmanifest)
 library(IlluminaHumanMethylationEPICmanifest)
 library(IlluminaHumanMethylationEPICanno.ilm10b2.hg19)
+library(knitr)
+library(dplyr)
+library(qqman)  
+library(gplots)
+library(ggplot2)
+library(viridis)
 
 # Load raw data
 baseDir <- ('Input')
@@ -50,18 +55,9 @@ Separate the raw intensity data into red and green channels. This distinction he
 ```r
 # Create R/G dataframes
 Red <- data.frame(getRed(RGset))
-dim(Red)
-```
-```r
-## [1] 622399      8
-```
-
-```r
 Green <- data.frame(getGreen(RGset))
-dim(Green)
-```
-```r
-## [1] 622399      8
+dim(Red)            ## [1] 622399      8
+dim(Green)          ## [1] 622399      8
 ```
 
 ### 3. Check Probe Info by Address
@@ -71,11 +67,6 @@ To determine the probe type, refer to the manifest file from Illumina, which cat
 ```r
 # Check probe info by address
 address <- "39802405"
-
-if (address %in% rownames(Red) & address %in% rownames(Green)) 
-    Red_fluor <- Red[address, ]
-    Green_fluor <- Green[address, ]
-
 load("Illumina450Manifest_clean.RData")
 probe_type = Illumina450Manifest_clean[Illumina450Manifest_clean$AddressA_ID==address, 'Infinium_Design_Type']
 ```
@@ -86,6 +77,10 @@ probe_type = Illumina450Manifest_clean[Illumina450Manifest_clean$AddressA_ID==ad
 
 ```r
 # Create and fill the fluorescence_data dataframe
+
+if (address %in% rownames(Red) & address %in% rownames(Green)) 
+    Red_fluor <- Red[address, ]
+    Green_fluor <- Green[address, ]
 
 fluorescence_data <- data.frame(
   Sample = colnames(Red),
@@ -121,7 +116,6 @@ The `MSet.raw` object contains methylated and unmethylated signal intensities, f
 MSet.raw <- preprocessRaw(RGset)
 ```
 
-
 ## Preprocessing and Normalization
 
 ### 5. Quality Check
@@ -134,7 +128,8 @@ The plot shows clustering of samples with high median values, indicating good qu
 
 ```r
 # Quality check
-qc <- qcReport(RGset, pdf = "QCReport.pdf")
+qc <- getQC(MSet.raw)
+plotQC(qc)
 ```
 ![QC plot](plots/QCplot.png)
 
@@ -150,7 +145,9 @@ controlStripPlot(RGset, controls="NEGATIVE")
 ##### 5.3 Failed positions
 ```r
 # Calculate detection pValues
-
+detP <- detectionP(RGset) 
+threshold <- 0.05
+failed <- detP > threshold
 failed_positions <- colSums(failed)
 
 # Summarize failed positions per sample
@@ -181,10 +178,10 @@ Beta values represent the proportion of methylation at each CpG site, while M va
 
 ```r
 # Calculate Beta and M values
-beta_values <- getBeta(MSet.raw)
-M_values <- getM(MSet.raw)
+beta <- getBeta(MSet.raw)
+M <- getM(MSet.raw)
 ```
-![WT beta and M plots](plots/WT_beta_m.png)
+![Beta and M plots](plots/BetaMvalues.png)
 
 ### 7. Functional Normalization
 
