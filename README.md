@@ -191,10 +191,10 @@ Most of these samples have very low percentages of failed probes, indicating hig
 
 Methylation levels are continuous values between 0 and 1, obtained from fluorescence intensities. These levels can be represented as:
 
-- **Beta Values (β-values)**: Represent the proportion of methylation at a CpG site (0 to 1).
+- **Beta Values (β-values)**: represent the proportion of methylation at a CpG site (0 to 1).
   - Formula: $\( \beta = \frac{M}{M + U} \)$
 
-- **M Values (M-values)**: Log-transformed ratios of methylated to unmethylated intensities.
+- **M Values (M-values)**: log-transformed ratios of methylated to unmethylated intensities.
   - Formula: $\( M = \log_2 \frac{M}{U} \)$
 
 From these formulas, the conversion between Beta and M values can be derived as:
