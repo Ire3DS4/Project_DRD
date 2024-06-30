@@ -74,7 +74,7 @@ failed_positions <- colSums(failed)
 failed_positions_summary <- data.frame(
   Sample = colnames(failed),
   n_Failed_positions = colSums(failed),
-  means_of_columns = colMeans(failed)*100
+  percentage_failed = colMeans(failed)*100
 )
 failed_positions_summary$Sample <- sapply(strsplit(rownames(failed_positions_summary), "_"), `[`, 2)
 rownames(failed_positions_summary) <- NULL
