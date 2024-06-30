@@ -147,7 +147,7 @@ Negative control probes estimate system background intensity. Normally, these va
 controlStripPlot(RGset, controls="NEGATIVE")
 ```
 ![Control strip plot](plots/controlStripPlot_NEGATIVE.png)
-Intensity values below 1000 units (log2(1000) = 10) indicate low background noise and reliable signals.
+These intensity values are all below 1000 units (log2(1000) = 10), indicating low background noise and reliable signals.
 
 ##### 5.3 Failed positions
 
