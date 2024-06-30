@@ -130,7 +130,7 @@ The main goal of quality checks is to assess the overall data quality and identi
 ##### 5.1 QCplot
 
 QCplot visualizes the median intensities of methylation and unmethylation signals. High median values in both distributions indicate good data quality. However, the plot has limitations, such as not accounting for background signals or potential sample preparation failures.
-The plot shows clustering of samples with high median values, indicating good quality data. Low median values suggest poor quality, which can affect downstream analyses.
+The plot shows clustering of samples with high median values, indicating good quality data. Low median values would suggest poor quality, which can affect downstream analyses.
 
 ```r
 # Quality check
