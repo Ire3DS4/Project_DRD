@@ -26,7 +26,7 @@ This repository provides a comprehensive pipeline for processing, analyzing, and
 ## Data Preparation
 
 ### 0. Libraries
-The 'minfi' package in R is utilized for analyzing methylation data from Infinium methylation arrays. It handles raw data, quality control, preprocessing, and subsequent analyses. Other libraries serve specific roles in data analysis, visualization, and genomic research.
+The `minfi` package in R is utilized for analyzing methylation data from Infinium methylation arrays. It handles raw data, quality control, preprocessing, and subsequent analyses. Other libraries serve specific roles in data analysis, visualization, and genomic research.
 
 ```r
 # Load necessary libraries
