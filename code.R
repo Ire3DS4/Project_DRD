@@ -7,8 +7,8 @@ library(knitr)
 library(dplyr)
 library(qqman)  
 library(gplots)
+library(ggplot2)
 library(viridis)
-library(factoextra) 
 
 # 1
 baseDir <- ('Input')
@@ -221,7 +221,20 @@ legend("bottomright", legend=levels(samplesheet$Sex),  col = c(1:nlevels(samples
 
 dev.off()
 
-fviz_eig(pca_results, addlabels = T,xlab='PC number',ylab='% of variance', barfill = "#0063A6", barcolor = "black") ###
+var_explained <- pca_results$sdev^2 / sum(pca_results$sdev^2) * 100
+
+eig_df <- data.frame(
+  PC = seq_along(var_explained),
+  Variance = var_explained
+)
+
+ggplot(eig_df, aes(x = PC, y = Variance)) +
+  geom_bar(stat = "identity", fill = "#00CCCC", color = "black") +
+  geom_text(aes(label = round(Variance, 1)), vjust = -0.5) +
+  labs(x = "PCs", y = "% of variance") +
+  theme_minimal()
+
+# ggsave("PCA_variance.png", width = 8, height = 6)
 
 # 9
 mann_whitney_function <- function(x) {
