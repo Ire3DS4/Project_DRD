@@ -245,7 +245,7 @@ Clustering of samples indicates similarity, while separation between groups (e.g
 pca_results <- prcomp(t(beta_SWAN), scale. = TRUE)
 ```
 ![PCA](plots/PCA.png)
-The groups primarily segregate based on PC1, where most of the wild types (WTs) have lower PC1 values compared to mutants (MUTs), which predominantly occupy the higher PC1 range. While WTs form a cohesive cluster also considering PC2, MUTs show varying PC2 values, except for R02C02 and R03C02, which cluster closely together. Notably, R02C01, despite being a MUT, clusters with the WTs. PC1 also reveals a clear separation by sex on the graph. Males cluster tightly together across PC1 and PC2, whereas females exhibit three distinct clusters dispersed across different PC2 levels.
+The groups primarily segregate based on PC1, where most of the wild types (WTs) have lower PC1 values compared to mutants (MUTs), which predominantly occupy the higher PC1 range. While WTs form a cohesive cluster, MUTs show varying PC2 values, except for R02C02 and R03C02, which cluster closely together. Notice that R02C01, despite being a MUT, clusters with the WTs. This analysis also reveals a clear separation by sex on the graph. Males cluster tightly together across PC1 and PC2, whereas females exhibit three distinct clusters.
 
 ```r
 var_explained <- pca_results$sdev^2 / sum(pca_results$sdev^2) * 100
