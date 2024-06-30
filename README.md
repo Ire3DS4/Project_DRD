@@ -336,9 +336,9 @@ kable(final_mw_corr)
 ```
 
 ```r
-| sum.final_mw....0.05.| sum.corrected_pValues_Bonf....0.05.| sum.corrected_pValues_BH....0.05.|
-|---------------------:|-----------------------------------:|---------------------------------:|
-|                356521|                                   0|                                 0|
+|                                 | before_corr| after_Bonf| after_BH|
+|:--------------------------------|-----------:|----------:|--------:|
+|Differentially methylated probes |       53343|          0|        0|
 ```
 
 ### 11. Volcano and Manhattan Plots
